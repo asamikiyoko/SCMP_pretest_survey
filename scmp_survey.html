@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>SCMP Pilot Study</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --accent: #1d4ed8;
+  --accent-bg: #eff6ff;
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --border-s: #94a3b8;
+  --green: #059669;
+  --orange: #ea580c;
+  --pink: #db2777;
+  --radius: 10px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.6; min-height: 100vh;
+}
+.wrap { max-width: 620px; margin: 0 auto; padding: 32px 18px 60px; }
+.wrap-wide { max-width: 920px; margin: 0 auto; padding: 28px 18px 60px; }
+
+/* Typography */
+h1 { font-size: 24px; font-weight: 700; }
+h2 { font-size: 20px; font-weight: 700; }
+h3 { font-size: 15px; font-weight: 700; }
+.sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.mono { font-family: "SF Mono", "Fira Code", "Consolas", monospace; }
+.tag { font-size: 12px; font-weight: 600; letter-spacing: .8px; color: var(--accent); font-family: "SF Mono", monospace; }
+
+/* Card */
+.card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+  padding: 24px; margin-bottom: 16px;
+}
+
+/* Buttons */
+.btn {
+  display: inline-block; padding: 12px 28px; border-radius: var(--radius); border: none;
+  font-size: 15px; font-weight: 600; cursor: pointer; transition: all .15s;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #1e40af; }
+.btn-primary:disabled { opacity: .45; cursor: not-allowed; }
+.btn-secondary { background: var(--card); color: var(--text); border: 1.5px solid var(--border); }
+.btn-ghost { background: none; color: var(--accent); padding: 8px 16px; }
+.btn-full { width: 100%; }
+.btn-back { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 14px; margin-bottom: 20px; }
+
+/* Form elements */
+input[type="text"], input[type="password"] {
+  width: 100%; padding: 12px 14px; border-radius: 8px; border: 1.5px solid var(--border);
+  font-size: 16px; background: var(--bg); color: var(--text);
+}
+textarea {
+  width: 100%; min-height: 80px; padding: 12px; border-radius: 8px; border: 1.5px solid var(--border);
+  background: var(--bg); color: var(--text); font-size: 14px; resize: vertical; font-family: inherit;
+}
+.label { font-size: 13px; font-weight: 600; color: var(--muted); display: block; margin-bottom: 6px; }
+
+/* Radio / Checkbox options */
+.opt-grid { display: grid; gap: 6px 12px; }
+.opt-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.opt {
+  display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px;
+  cursor: pointer; transition: all .15s; user-select: none; font-size: 14px; line-height: 1.45;
+  background: var(--card); border: 1.5px solid var(--border);
+}
+.opt.selected { background: var(--accent-bg); border-color: var(--accent); }
+.opt.disabled { opacity: .4; cursor: not-allowed; }
+.radio-dot {
+  width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0;
+  border: 2px solid var(--border-s); background: var(--card); transition: all .15s;
+}
+.opt.selected .radio-dot { border: 5px solid var(--accent); }
+.check-box {
+  width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0; display: flex;
+  align-items: center; justify-content: center; border: 2px solid var(--border-s);
+  background: var(--card); color: #fff; font-size: 12px; font-weight: 700; transition: all .15s;
+}
+.opt.selected .check-box { background: var(--accent); border-color: var(--accent); }
+
+/* Likert */
+.likert-row { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; }
+.likert-btn {
+  width: 46px; padding: 10px 0; border-radius: 8px; border: 1.5px solid var(--border);
+  background: var(--card); color: var(--text); cursor: pointer; font-weight: 500;
+  font-size: 15px; transition: all .15s; text-align: center;
+}
+.likert-btn.selected { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 700; }
+.likert-labels { display: flex; justify-content: space-between; margin-top: 6px; font-size: 12px; color: var(--muted); }
+.na-btn {
+  margin-top: 10px; padding: 8px 18px; border-radius: 8px; font-size: 13px;
+  border: 1.5px solid var(--border); background: var(--card); color: var(--text); cursor: pointer;
+}
+.na-btn.selected { border-color: var(--accent); background: var(--accent-bg); }
+
+/* Question card */
+.q-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px 22px; margin-bottom: 14px; }
+.q-title { font-size: 15px; font-weight: 600; margin-bottom: 16px; line-height: 1.55; }
+.q-id { color: var(--accent); margin-right: 8px; font-family: "SF Mono", monospace; }
+
+/* Notice banner */
+.notice {
+  background: var(--accent-bg); border: 1px solid var(--accent); border-radius: var(--radius);
+  padding: 12px 16px; font-size: 13px; color: var(--accent); line-height: 1.55; margin-bottom: 24px;
+}
+
+/* Section header */
+.sec-header {
+  font-size: 14px; font-weight: 700; color: var(--muted); margin-top: 28px; margin-bottom: 12px;
+  padding-bottom: 8px; border-bottom: 1px solid var(--border);
+}
+
+/* Day picker */
+.day-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.day-btn {
+  padding: 20px 0; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer;
+  border: 1.5px solid var(--border); background: var(--card); color: var(--text); transition: all .15s;
+  text-align: center;
+}
+.day-btn.done { background: var(--accent-bg); color: var(--accent); }
+.day-btn .done-label { font-size: 10px; margin-top: 4px; opacity: .7; }
+
+/* Dashboard */
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
+.stat-val { font-size: 28px; font-weight: 700; font-family: "SF Mono", monospace; }
+.stat-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.stat-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+.tabs { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+.tab {
+  padding: 10px 16px; background: none; border: none; font-size: 13px; cursor: pointer;
+  white-space: nowrap; color: var(--muted); font-weight: 500;
+  border-bottom: 2px solid transparent;
+}
+.tab.active { color: var(--accent); font-weight: 700; border-bottom-color: var(--accent); }
+
+/* Completion matrix */
+.matrix { width: 100%; border-collapse: collapse; font-size: 13px; }
+.matrix th { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); color: var(--muted); font-weight: 600; }
+.matrix td { padding: 8px 10px; }
+.matrix th.center, .matrix td.center { text-align: center; }
+.dot {
+  display: inline-block; width: 26px; height: 26px; line-height: 26px; border-radius: 6px;
+  text-align: center; font-size: 12px; font-weight: 700; color: #fff;
+}
+.dot-used { background: var(--green); }
+.dot-notused { background: var(--orange); }
+.dot-missing { background: var(--border); color: var(--muted); }
+
+/* Open text */
+.ot-entry {
+  padding: 10px 14px; margin-bottom: 8px; border-radius: 8px; background: var(--bg);
+  font-size: 13px; line-height: 1.55;
+}
+.ot-tag { font-family: "SF Mono", monospace; font-weight: 600; color: var(--accent); margin-right: 8px; }
+.ot-group { color: var(--muted); margin-right: 8px; }
+
+.chart-container { position: relative; height: 260px; margin-bottom: 16px; }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: #0f172a; color: #fff; padding: 12px 24px; border-radius: 10px;
+  font-size: 14px; font-weight: 600; z-index: 999; animation: fadeup .3s;
+}
+@keyframes fadeup { from { opacity: 0; transform: translateX(-50%) translateY(10px); } }
+
+/* Success page */
+.success { text-align: center; padding: 80px 20px; }
+.success .icon { font-size: 48px; margin-bottom: 16px; }
+
+@media (max-width: 500px) {
+  .opt-grid.cols-2 { grid-template-columns: 1fr; }
+  .stat-grid { grid-template-columns: 1fr 1fr; }
+  .day-grid { grid-template-columns: repeat(4, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+// ╔══════════════════════════════════════════════════════════╗
+// ║  ⚙️  在这里粘贴你的 Google Apps Script Web App URL      ║
+// ╚══════════════════════════════════════════════════════════╝
+const API_URL = "https://script.google.com/macros/library/d/1qy9cEBEffE5pd-4stbjglZOeixTpvV4kZ26ICtqOn-0EImZJv4pi3EvA/1";  // ← 粘贴你的 URL，例如 "https://script.google.com/macros/s/xxxxx/exec"
+const ADMIN_PIN = "2026scmp";
+
+// ── Question Definitions ──
+const PRETEST_QS = [
+  { id:"P1", text:"過去 7 天，你有幾天在手機上看新聞？", type:"single", opts:["0天","1天","2天","3天","4天","5天","6天","7天"] },
+  { id:"P2", text:"你通常首先從哪裡找到新聞？", type:"single", opts:["SCMP","其他新聞機構 app 或網站","社交媒體","搜尋","新聞聚合器","AI 工具","其他"] },
+  { id:"P3", text:"你目前多久使用一次 SCMP？", type:"single", opts:["從未","以前用過但現在沒有","少於每週 1 天","每週 1-3 天","每週 4-7 天"] },
+  { id:"P4", text:"你目前的 SCMP 身分是？", type:"single", opts:["付費訂閱","免費註冊","未註冊","曾訂閱但目前沒有","不確定"] },
+  { id:"P5", text:"你通常最關注哪些新聞主題？（最多選 3 項）", type:"multi", max:3, opts:["香港","中國","國際","商業及金融","科技","文化與生活","體育","其他"] },
+  { id:"P6", text:"你打開新聞 app 最常想完成甚麼？（最多選 2 項）", type:"multi", max:2, opts:["快速了解大事","追蹤特定事件","尋找與自己相關的新聞","看看意料之外的重要議題","核實資訊","其他"] },
+  { id:"P7", text:"回想過去 7 天你最常用的手機新聞來源：它讓你容易找到想看的新聞。", type:"likert7", na:true },
+  { id:"P8", text:"同一新聞來源：它讓你接觸到重要但原本不會主動搜尋的議題。", type:"likert7", na:true },
+  { id:"P9", text:"同一新聞來源：我信任它呈現的新聞。", type:"likert7", na:true },
+  { id:"P10", text:"你對 AI 個人化推薦或 AI 生成的新聞功能有多熟悉？", type:"likert5", leftLabel:"完全不熟悉", rightLabel:"非常熟悉" },
+  { id:"P11", text:"你有多信任 AI 輔助的新聞推薦？", type:"likert5", leftLabel:"完全不信任", rightLabel:"完全信任" },
+];
+
+const DIARY_A = [
+  { id:"D1", text:"今天你有打開研究指定的 SCMP app 嗎？", type:"single", opts:["有","沒有"] },
+  { id:"D2", text:"今天沒有使用指定 app，最主要原因是甚麼？", type:"single", showIf:"D1=沒有", opts:["沒有看新聞需要","太忙","使用了其他來源","忘記或沒有想起它","找不到想看的內容","技術或登入問題","其他"] },
+  { id:"D3", text:"今天你有透過其他來源看新聞嗎？最主要是哪一類？", type:"single", showIf:"D1=沒有", opts:["沒有","其他新聞機構","社交媒體","搜尋","聚合器","AI 工具","其他"] },
+];
+
+const DIARY_B = [
+  { id:"D4", text:"今天第一次打開它時，你主要想做甚麼？", type:"single", opts:["快速了解大事","追蹤特定事件","尋找與自己相關的新聞","發現原本不會看的重要議題","隨意瀏覽","其他"] },
+  { id:"D5", text:"今天第一次使用時，你有找到對當時目的有用的文章嗎？", type:"single", opts:["有，1 篇","有，2-3 篇","有，4 篇或以上","沒有"] },
+  { id:"D6", text:"從打開 app 到找到第一篇有用的文章，大約花了多久？", type:"single", opts:["少於 1 分鐘","1-3 分鐘","超過 3 分鐘","直到離開都沒有"] },
+  { id:"D7", text:"今天你原本想做的事完成了多少？", type:"single", opts:["完全完成","部分完成","沒有完成","沒有特定目的"] },
+  { id:"D8a", text:"今天這個 app 幫我找到符合當時需要的新聞。", type:"likert7", na:true, naText:"不適用" },
+  { id:"D8b", text:"今天用它找新聞很容易。", type:"likert7" },
+  { id:"D8c", text:"我信任今天在這個 app 看到的新聞。", type:"likert7", na:true, naText:"無法判斷" },
+  { id:"D8d", text:"今天使用它值得我花的時間與心力。", type:"likert7" },
+  { id:"D8e", text:"這個 app 今天的表現符合我使用前的預期。", type:"likert7", na:true, naText:"沒有預期" },
+  { id:"D9", text:"今天最有用的一篇新聞是甚麼？為甚麼？", type:"text", ph:"沒有則填「沒有」" },
+  { id:"D10", text:"今天有沒有令你感到困惑、內容重複或不信任的地方？發生了甚麼？", type:"text", ph:"沒有則填「沒有」" },
+  { id:"D11", text:"今天你有沒有因為這個 app，而少用另一個新聞來源？", type:"single", opts:["有","沒有","不確定"] },
+  { id:"D11_source", text:"主要是哪個來源？", type:"text", showIf:"D11=有", ph:"選填" },
+];
+
+const DIARY_C = [
+  { id:"N1", text:"今天你用了哪些部分？", type:"single", opts:["Discover","Editors' Pick","兩者","記不起來"] },
+  { id:"N2", text:"今天你有沒有按 Interested、Not for me、Maybe，或刷新推薦？", type:"single", showIf:"N1_discover", opts:["有明確回饋","只有刷新","兩者都有","都沒有"] },
+  { id:"N3", text:"回饋或刷新之後的下一批文章：它有按你預期的方向改變嗎？", type:"likert7", showIf:"N2_feedback", na:true, naText:"未看到下一批" },
+  { id:"N4", text:"今天你有讀 AI 導讀嗎？", type:"single", showIf:"N1_ep", opts:["有","沒有","沒有看到導讀"] },
+  { id:"N5", text:"導讀有準確概述當日選文的主要主題嗎？", type:"likert7", showIf:"N4_read", na:true, naText:"無法判斷" },
+  { id:"N6", text:"你認為今天 Editors' Pick 的文章由誰挑選？", type:"single", showIf:"N1_ep", opts:["編輯","AI 系統","兩者共同挑選","不確定"] },
+];
+
+// ── State ──
+let state = {
+  page: "landing", pid: "", group: "", diaryDay: null, answers: {},
+  toast: "", dashData: null, dashTab: "overview", adminAuthed: false,
+  localLog: JSON.parse(localStorage.getItem("scmp_log") || "[]"),
+  completedDays: JSON.parse(localStorage.getItem("scmp_days") || "{}"),
+};
+
+function setState(patch) {
+  Object.assign(state, patch);
+  render();
+}
+
+// ── API ──
+async function submitData(payload) {
+  // Always save locally as backup
+  state.localLog.push({ ...payload, _localTime: new Date().toISOString() });
+  localStorage.setItem("scmp_log", JSON.stringify(state.localLog));
+
+  if (!API_URL) {
+    showToast("⚠️ 尚未設定 API URL，數據已保存在本地");
+    return true;
+  }
+  try {
+    const r = await fetch(API_URL, {
+      method: "POST", mode: "no-cors",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify(payload),
+    });
+    return true;
+  } catch (e) {
+    showToast("⚠️ 網路錯誤，數據已保存在本地");
+    return true; // still saved locally
+  }
+}
+
+async function fetchDashboard() {
+  if (!API_URL) {
+    // Use local data
+    const pretests = state.localLog.filter(l => l.type === "pretest");
+    const diaries = state.localLog.filter(l => l.type === "diary");
+    return { pretest: pretests.map(p => ({ ...p.answers, pid: p.pid, group: p.group, timestamp: p._localTime })),
+             diary: diaries.map(d => ({ ...d.answers, pid: d.pid, group: d.group, day: d.day, timestamp: d._localTime })),
+             participants: [] };
+  }
+  try {
+    const r = await fetch(API_URL + "?action=all");
+    return await r.json();
+  } catch {
+    showToast("無法載入數據");
+    return { pretest: [], diary: [], participants: [] };
+  }
+}
+
+function showToast(msg) {
+  state.toast = msg;
+  render();
+  setTimeout(() => { state.toast = ""; render(); }, 3000);
+}
+
+// ── Rendering Helpers ──
+function h(tag, attrs, ...children) {
+  const el = document.createElement(tag);
+  if (attrs) {
+    for (const [k, v] of Object.entries(attrs)) {
+      if (k === "style" && typeof v === "object") Object.assign(el.style, v);
+      else if (k.startsWith("on")) el.addEventListener(k.slice(2).toLowerCase(), v);
+      else if (k === "className") el.className = v;
+      else if (k === "innerHTML") el.innerHTML = v;
+      else el.setAttribute(k, v);
+    }
+  }
+  for (const c of children.flat()) {
+    if (c == null) continue;
+    el.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
+  }
+  return el;
+}
+
+function renderRadio(opts, value, onChange, cols) {
+  const grid = h("div", { className: "opt-grid" + (cols === 2 || opts.length > 4 ? " cols-2" : "") });
+  opts.forEach(opt => {
+    const item = h("div", {
+      className: "opt" + (value === opt ? " selected" : ""),
+      onClick: () => onChange(opt)
+    }, h("span", { className: "radio-dot" }), opt);
+    grid.appendChild(item);
+  });
+  return grid;
+}
+
+function renderCheckbox(opts, values, onChange, max) {
+  values = values || [];
+  const grid = h("div", { className: "opt-grid cols-2" });
+  opts.forEach(opt => {
+    const sel = values.includes(opt);
+    const full = max && values.length >= max && !sel;
+    const item = h("div", {
+      className: "opt" + (sel ? " selected" : "") + (full ? " disabled" : ""),
+      onClick: () => {
+        if (sel) onChange(values.filter(v => v !== opt));
+        else if (!full) onChange([...values, opt]);
+      }
+    }, h("span", { className: "check-box" }, sel ? "✓" : ""), opt);
+    grid.appendChild(item);
+  });
+  return grid;
+}
+
+function renderLikert(value, onChange, max, leftLabel, rightLabel, naOpt, naText) {
+  max = max || 7;
+  const wrap = h("div");
+  const row = h("div", { className: "likert-row" });
+  for (let i = 1; i <= max; i++) {
+    const btn = h("button", {
+      className: "likert-btn" + (value === i ? " selected" : ""),
+      onClick: () => onChange(i)
+    }, String(i));
+    row.appendChild(btn);
+  }
+  wrap.appendChild(row);
+
+  const defLeft = max === 7 ? "非常不同意" : "1";
+  const defRight = max === 7 ? "非常同意" : String(max);
+  const labels = h("div", { className: "likert-labels" },
+    h("span", {}, leftLabel || defLeft),
+    h("span", {}, rightLabel || defRight)
+  );
+  wrap.appendChild(labels);
+
+  if (naOpt) {
+    const na = h("button", {
+      className: "na-btn" + (value === "N/A" ? " selected" : ""),
+      onClick: () => onChange("N/A")
+    }, naText || "不適用");
+    wrap.appendChild(na);
+  }
+  return wrap;
+}
+
+function renderQuestion(q, value, onChange) {
+  const card = h("div", { className: "q-card" });
+  const title = h("p", { className: "q-title" },
+    h("span", { className: "q-id" }, q.id), q.text
+  );
+  card.appendChild(title);
+
+  if (q.type === "single") card.appendChild(renderRadio(q.opts, value, onChange, q.opts.length > 4 ? 2 : 1));
+  else if (q.type === "multi") card.appendChild(renderCheckbox(q.opts, value, onChange, q.max));
+  else if (q.type === "likert7") card.appendChild(renderLikert(value, onChange, 7, q.leftLabel, q.rightLabel, q.na, q.naText));
+  else if (q.type === "likert5") card.appendChild(renderLikert(value, onChange, 5, q.leftLabel, q.rightLabel, q.na, q.naText));
+  else if (q.type === "text") {
+    const ta = h("textarea", { placeholder: q.ph || "", value: value || "" });
+    ta.value = value || "";
+    ta.addEventListener("input", e => onChange(e.target.value));
+    card.appendChild(ta);
+  }
+  return card;
+}
+
+// ── Pages ──
+function renderLanding() {
+  const wrap = h("div", { className: "wrap" });
+
+  // Header
+  const header = h("div", { style: { textAlign: "center", marginBottom: "40px", marginTop: "20px" } },
+    h("div", { className: "tag" }, "SCMP PILOT STUDY"),
+    h("h1", { style: { marginTop: "8px" } }, "問卷系統"),
+    h("p", { className: "sub", style: { marginTop: "8px" } }, "請輸入你的研究編號，選擇要填寫的問卷。")
+  );
+  wrap.appendChild(header);
+
+  const card = h("div", { className: "card" });
+
+  // PID
+  card.appendChild(h("label", { className: "label" }, "研究編號"));
+  const pidInput = h("input", { type: "text", placeholder: "例如：S01", className: "mono", style: { letterSpacing: "2px", marginBottom: "18px" } });
+  pidInput.value = state.pid;
+  pidInput.addEventListener("input", e => state.pid = e.target.value.toUpperCase());
+  card.appendChild(pidInput);
+
+  // Group
+  card.appendChild(h("label", { className: "label", style: { marginTop: "10px" } }, "你的組別"));
+  card.appendChild(renderRadio(["對照組（現有版）", "實驗組（新版）"], state._groupLabel || "", v => { state._groupLabel = v; state.group = v.includes("新版") ? "experimental" : "control"; render(); }));
+
+  // Action
+  card.appendChild(h("label", { className: "label", style: { marginTop: "18px" } }, "選擇問卷"));
+  card.appendChild(renderRadio(["前測問卷", "每日日誌（Day 1-7）"], state._action || "", v => { state._action = v; render(); }));
+
+  // Submit
+  const canGo = state.pid && state.group && state._action;
+  const goBtn = h("button", {
+    className: "btn btn-primary btn-full",
+    style: { marginTop: "24px" },
+    disabled: !canGo ? "disabled" : undefined,
+    onClick: () => {
+      if (!canGo) return;
+      state.answers = {};
+      if (state._action === "前測問卷") setState({ page: "pretest" });
+      else setState({ page: "diary-pick" });
+    }
+  }, "開始填寫");
+  if (!canGo) goBtn.disabled = true;
+  card.appendChild(goBtn);
+
+  wrap.appendChild(card);
+
+  // Admin link
+  const admin = h("div", { style: { textAlign: "center", marginTop: "32px" } },
+    h("button", {
+      style: { background: "none", border: "none", color: "var(--muted)", fontSize: "13px", cursor: "pointer", textDecoration: "underline", opacity: ".6" },
+      onClick: () => setState({ page: "admin-login" })
+    }, "研究員登入")
+  );
+  wrap.appendChild(admin);
+
+  return wrap;
+}
+
+function renderConsent() {
+  const wrap = h("div", { className: "wrap" });
+  wrap.appendChild(h("button", { className: "btn-back", onClick: () => setState({ page: "landing" }) }, "← 返回"));
+
+  const card = h("div", { className: "card" });
+  card.appendChild(h("h2", {}, "研究說明"));
+  card.appendChild(h("p", { style: { fontSize: "14px", lineHeight: "1.7", color: "var(--muted)", marginTop: "16px" } },
+    "我們想了解你平常如何在手機上看新聞。請依照實際情況作答，沒有標準答案。研究期間可能記錄指定 app 內的使用事件；你可不使用 app，並可隨時退出。資料以研究編號處理。實際記錄項目、資料收集與保留細節以另行提供的同意書為準。"
+  ));
+  card.appendChild(h("button", {
+    className: "btn btn-primary btn-full", style: { marginTop: "24px" },
+    onClick: () => setState({ page: "pretest-form" })
+  }, "我已了解，開始填寫"));
+  wrap.appendChild(card);
+  return wrap;
+}
+
+function renderPretestForm() {
+  const wrap = h("div", { className: "wrap" });
+
+  const topBar = h("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" } },
+    h("button", { className: "btn-back", style: { margin: 0 }, onClick: () => setState({ page: "landing" }) }, "← 返回"),
+    h("span", { className: "mono", style: { fontSize: "12px", color: "var(--muted)" } }, state.pid + " · 前測問卷")
+  );
+  wrap.appendChild(topBar);
+  wrap.appendChild(h("h2", {}, "前測問卷"));
+  wrap.appendChild(h("p", { className: "sub", style: { marginBottom: "28px" } }, "共 " + PRETEST_QS.length + " 題，約 5 分鐘"));
+
+  PRETEST_QS.forEach(q => {
+    wrap.appendChild(renderQuestion(q, state.answers[q.id], v => { state.answers[q.id] = v; render(); }));
+  });
+
+  const allDone = PRETEST_QS.every(q => {
+    const v = state.answers[q.id];
+    if (q.type === "multi") return v && v.length > 0;
+    if (q.type === "text") return v && v.trim();
+    return v !== undefined && v !== "";
+  });
+
+  const bar = h("div", { style: { marginTop: "20px", textAlign: "right" } });
+  const sub = h("button", {
+    className: "btn btn-primary", disabled: !allDone ? "disabled" : undefined,
+    onClick: async () => {
+      if (!allDone) return;
+      await submitData({ type: "pretest", pid: state.pid, group: state.group, answers: state.answers });
+      setState({ page: "success-pretest" });
+    }
+  }, "提交問卷");
+  if (!allDone) sub.disabled = true;
+  bar.appendChild(sub);
+  if (!allDone) bar.appendChild(h("p", { style: { fontSize: "12px", color: "var(--muted)", marginTop: "8px" } }, "請完成所有題目後提交"));
+  wrap.appendChild(bar);
+
+  return wrap;
+}
+
+function renderDiaryPick() {
+  const wrap = h("div", { className: "wrap" });
+  wrap.appendChild(h("button", { className: "btn-back", onClick: () => setState({ page: "landing" }) }, "← 返回"));
+  wrap.appendChild(h("h2", {}, "每日日誌"));
+  wrap.appendChild(h("p", { className: "sub", style: { marginBottom: "24px" } }, "選擇今天是第幾天"));
+
+  const done = state.completedDays[state.pid] || [];
+  const grid = h("div", { className: "day-grid" });
+  for (let d = 1; d <= 7; d++) {
+    const isDone = done.includes(d);
+    const btn = h("button", {
+      className: "day-btn" + (isDone ? " done" : ""),
+      onClick: () => { state.answers = {}; setState({ page: "diary-form", diaryDay: d }); }
+    }, "Day " + d);
+    if (isDone) btn.appendChild(h("div", { className: "done-label" }, "已填"));
+    grid.appendChild(btn);
+  }
+  wrap.appendChild(grid);
+  return wrap;
+}
+
+function renderDiaryForm() {
+  const wrap = h("div", { className: "wrap" });
+  const day = state.diaryDay;
+  const a = state.answers;
+  const isExp = state.group === "experimental";
+
+  const topBar = h("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" } },
+    h("button", { className: "btn-back", style: { margin: 0 }, onClick: () => setState({ page: "diary-pick" }) }, "← 選擇日期"),
+    h("span", { className: "mono", style: { fontSize: "12px", color: "var(--muted)" } }, state.pid + " · Day " + day)
+  );
+  wrap.appendChild(topBar);
+
+  wrap.appendChild(h("div", { className: "notice" },
+    h("span", { innerHTML: "請只回想<strong>今天</strong>的使用經驗。即使沒有打開指定 app，也請填第一部分。你可以寫「沒有」，不需要刻意每天使用。" })
+  ));
+
+  // Section A
+  wrap.appendChild(h("div", { className: "sec-header" }, "A. 基本使用"));
+  // D1
+  wrap.appendChild(renderQuestion(DIARY_A[0], a.D1, v => { state.answers.D1 = v; render(); }));
+  // D2, D3 if D1 = 沒有
+  if (a.D1 === "沒有") {
+    wrap.appendChild(renderQuestion(DIARY_A[1], a.D2, v => { state.answers.D2 = v; render(); }));
+    wrap.appendChild(renderQuestion(DIARY_A[2], a.D3, v => { state.answers.D3 = v; render(); }));
+  }
+
+  // Section B if D1 = 有
+  if (a.D1 === "有") {
+    wrap.appendChild(h("div", { className: "sec-header" }, "B. 使用體驗"));
+    DIARY_B.forEach(q => {
+      if (q.showIf) {
+        const [key, val] = q.showIf.split("=");
+        if (a[key] !== val) return;
+      }
+      wrap.appendChild(renderQuestion(q, a[q.id], v => { state.answers[q.id] = v; render(); }));
+    });
+
+    // Section C for experimental
+    if (isExp) {
+      wrap.appendChild(h("div", { className: "sec-header" }, "C. 新版功能"));
+      DIARY_C.forEach(q => {
+        if (q.showIf) {
+          if (q.showIf === "N1_discover" && a.N1 !== "Discover" && a.N1 !== "兩者") return;
+          if (q.showIf === "N1_ep" && a.N1 !== "Editors' Pick" && a.N1 !== "兩者") return;
+          if (q.showIf === "N2_feedback" && a.N2 !== "有明確回饋" && a.N2 !== "兩者都有" && a.N2 !== "只有刷新") return;
+          if (q.showIf === "N4_read" && a.N4 !== "有") return;
+        }
+        wrap.appendChild(renderQuestion(q, a[q.id], v => { state.answers[q.id] = v; render(); }));
+      });
+    }
+  }
+
+  const bar = h("div", { style: { marginTop: "24px", textAlign: "right" } });
+  const canSubmit = a.D1;
+  bar.appendChild(h("button", {
+    className: "btn btn-primary", disabled: !canSubmit ? "disabled" : undefined,
+    onClick: async () => {
+      if (!canSubmit) return;
+      await submitData({ type: "diary", pid: state.pid, group: state.group, day: day, answers: a });
+      // Mark day done
+      const cd = state.completedDays[state.pid] || [];
+      if (!cd.includes(day)) cd.push(day);
+      state.completedDays[state.pid] = cd;
+      localStorage.setItem("scmp_days", JSON.stringify(state.completedDays));
+      setState({ page: "success-diary" });
+    }
+  }, "提交日誌"));
+  wrap.appendChild(bar);
+  return wrap;
+}
+
+function renderSuccess(type) {
+  const wrap = h("div", { className: "wrap" });
+  const box = h("div", { className: "success" },
+    h("div", { className: "icon" }, "✓"),
+    h("h2", {}, type === "pretest" ? "前測問卷已提交" : "Day " + state.diaryDay + " 日誌已提交"),
+    h("p", { className: "sub", style: { marginTop: "8px" } },
+      type === "pretest" ? "感謝你完成前測。請等待研究員的下一步指示。" : "感謝你完成今天的日誌。明天同一時間再見！"
+    ),
+    h("button", { className: "btn btn-primary", style: { marginTop: "28px" }, onClick: () => setState({ page: "landing" }) }, "返回首頁")
+  );
+  wrap.appendChild(box);
+  return wrap;
+}
+
+function renderAdminLogin() {
+  const wrap = h("div", { className: "wrap", style: { maxWidth: "360px" } });
+  const box = h("div", { style: { textAlign: "center", paddingTop: "40px" } });
+  box.appendChild(h("button", { className: "btn-back", onClick: () => setState({ page: "landing" }) }, "← 返回"));
+  box.appendChild(h("h2", { style: { marginTop: "20px" } }, "研究員登入"));
+
+  const pwInput = h("input", { type: "password", placeholder: "輸入 PIN", className: "mono", style: { textAlign: "center", letterSpacing: "8px", marginTop: "16px" } });
+  pwInput.addEventListener("keydown", e => { if (e.key === "Enter" && pwInput.value === ADMIN_PIN) setState({ page: "dashboard", adminAuthed: true }); });
+  box.appendChild(pwInput);
+
+  box.appendChild(h("button", {
+    className: "btn btn-primary btn-full", style: { marginTop: "12px" },
+    onClick: () => { if (pwInput.value === ADMIN_PIN) setState({ page: "dashboard", adminAuthed: true }); else showToast("PIN 錯誤"); }
+  }, "登入"));
+  box.appendChild(h("p", { style: { fontSize: "11px", color: "var(--muted)", marginTop: "10px" } }, "預設 PIN: " + ADMIN_PIN));
+
+  wrap.appendChild(box);
+  return wrap;
+}
+
+// ── Dashboard ──
+let chartInstances = {};
+function destroyCharts() { Object.values(chartInstances).forEach(c => c.destroy()); chartInstances = {}; }
+
+async function renderDashboard() {
+  destroyCharts();
+  const wrap = h("div", { className: "wrap-wide" });
+
+  const topBar = h("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" } },
+    h("button", { className: "btn-back", style: { margin: 0 }, onClick: () => setState({ page: "landing" }) }, "← 返回"),
+    h("button", { className: "btn btn-ghost", onClick: async () => { state.dashData = await fetchDashboard(); render(); } }, "重新整理")
+  );
+  wrap.appendChild(topBar);
+
+  if (!state.dashData) {
+    state.dashData = await fetchDashboard();
+  }
+  const d = state.dashData;
+  const pretests = d.pretest || [];
+  const diaries = d.diary || [];
+
+  // Count
+  const allPids = [...new Set([...pretests.map(p => p.pid), ...diaries.map(p => p.pid)])];
+  const ctrlPids = allPids.filter(p => { const e = [...pretests, ...diaries].find(x => x.pid === p); return e && e.group === "control"; });
+  const expPids = allPids.filter(p => { const e = [...pretests, ...diaries].find(x => x.pid === p); return e && e.group === "experimental"; });
+  const zeroDays = diaries.filter(dd => dd.D1 === "沒有").length;
+
+  wrap.appendChild(h("h2", {}, "研究儀表板"));
+  wrap.appendChild(h("p", { className: "sub", style: { marginBottom: "20px" } },
+    allPids.length + " 位參與者 · " + pretests.length + " 份前測 · " + diaries.length + " 份日誌"
+  ));
+
+  // Tabs
+  const tabDefs = [
+    { id: "overview", label: "總覽" }, { id: "completion", label: "完成率" },
+    { id: "likert", label: "體驗趨勢" }, { id: "tasks", label: "任務達成" },
+    { id: "opentext", label: "開放題" }, { id: "export", label: "匯出" },
+  ];
+  const tabBar = h("div", { className: "tabs" });
+  tabDefs.forEach(t => {
+    tabBar.appendChild(h("button", {
+      className: "tab" + (state.dashTab === t.id ? " active" : ""),
+      onClick: () => { state.dashTab = t.id; render(); }
+    }, t.label));
+  });
+  wrap.appendChild(tabBar);
+
+  const content = h("div");
+
+  if (state.dashTab === "overview") {
+    // Stats
+    const stats = h("div", { className: "stat-grid" });
+    [
+      { l: "參與者", v: allPids.length, s: "對照 " + ctrlPids.length + " / 實驗 " + expPids.length },
+      { l: "前測完成", v: pretests.length, s: allPids.length ? Math.round(pretests.length / allPids.length * 100) + "%" : "—" },
+      { l: "日誌提交", v: diaries.length, s: allPids.length ? (diaries.length / (allPids.length * 7) * 100).toFixed(0) + "% 完成率" : "—" },
+      { l: "零使用日", v: zeroDays, s: diaries.length ? (zeroDays / diaries.length * 100).toFixed(0) + "%" : "—" },
+    ].forEach(c => {
+      stats.appendChild(h("div", { className: "stat-card" },
+        h("div", { className: "stat-label" }, c.l),
+        h("div", { className: "stat-val" }, String(c.v)),
+        h("div", { className: "stat-sub" }, c.s),
+      ));
+    });
+    content.appendChild(stats);
+
+    if (pretests.length > 0) {
+      const sumCard = h("div", { className: "card" });
+      sumCard.appendChild(h("h3", { style: { marginBottom: "14px" } }, "前測基線摘要"));
+      const grid = h("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", fontSize: "13px", color: "var(--muted)" } });
+      [
+        { label: "P1 看新聞天數", key: "P1" },
+        { label: "P3 SCMP 使用頻率", key: "P3" },
+        { label: "P4 SCMP 身分", key: "P4" },
+        { label: "P10 AI 熟悉度", key: "P10" },
+      ].forEach(item => {
+        const sec = h("div", {},
+          h("strong", { style: { color: "var(--text)" } }, item.label),
+          h("div", {}, pretests.map(p => p.pid + ": " + (p[item.key] || p.answers?.[item.key] || "—")).join("　"))
+        );
+        grid.appendChild(sec);
+      });
+      sumCard.appendChild(grid);
+      content.appendChild(sumCard);
+    }
+  }
+
+  if (state.dashTab === "completion") {
+    const card = h("div", { className: "card", style: { overflowX: "auto" } });
+    card.appendChild(h("h3", { style: { marginBottom: "16px" } }, "七天日誌完成矩陣"));
+    const table = h("table", { className: "matrix" });
+    const thead = h("thead");
+    const hr = h("tr");
+    hr.appendChild(h("th", {}, "ID"));
+    hr.appendChild(h("th", {}, "組別"));
+    for (let d = 1; d <= 7; d++) hr.appendChild(h("th", { className: "center" }, "D" + d));
+    thead.appendChild(hr);
+    table.appendChild(thead);
+
+    const tbody = h("tbody");
+    if (allPids.length === 0) {
+      const emptyRow = h("tr"); emptyRow.appendChild(h("td", { colSpan: "9", style: { padding: "20px", textAlign: "center", color: "var(--muted)" } }, "尚無數據"));
+      tbody.appendChild(emptyRow);
+    } else {
+      allPids.forEach(pid => {
+        const row = h("tr");
+        const grp = [...pretests, ...diaries].find(x => x.pid === pid);
+        const g = grp ? grp.group : "?";
+        row.appendChild(h("td", { className: "mono", style: { fontWeight: "600" } }, pid));
+        row.appendChild(h("td", { style: { color: "var(--muted)" } }, g === "control" ? "對照" : "實驗"));
+        for (let d = 1; d <= 7; d++) {
+          const entry = diaries.find(dd => dd.pid === pid && (dd.day == d || dd.day === "Day " + d));
+          let cls, label;
+          if (!entry) { cls = "dot-missing"; label = "—"; }
+          else if ((entry.D1 || entry.answers?.D1) === "有") { cls = "dot-used"; label = "✓"; }
+          else { cls = "dot-notused"; label = "○"; }
+          row.appendChild(h("td", { className: "center" }, h("span", { className: "dot " + cls }, label)));
+        }
+        tbody.appendChild(row);
+      });
+    }
+    table.appendChild(tbody);
+    card.appendChild(table);
+    card.appendChild(h("div", { style: { display: "flex", gap: "16px", marginTop: "14px", fontSize: "12px", color: "var(--muted)" } },
+      h("span", {}, "✓ 有使用"), h("span", {}, "○ 未使用（已填）"), h("span", {}, "— 未填寫")
+    ));
+    content.appendChild(card);
+  }
+
+  if (state.dashTab === "likert") {
+    const metrics = [
+      { key: "D8a", label: "D8a 找到符合需要的新聞" },
+      { key: "D8b", label: "D8b 找新聞的容易度" },
+      { key: "D8d", label: "D8d 值得花的時間與心力" },
+    ];
+    metrics.forEach(m => {
+      const card = h("div", { className: "card" });
+      card.appendChild(h("h3", {}, m.label + "（每日趨勢）"));
+      card.appendChild(h("p", { className: "sub", style: { marginBottom: "12px" } }, "1-7 分，僅含有使用 app 之日"));
+      const canvasWrap = h("div", { className: "chart-container" });
+      const canvas = h("canvas");
+      canvasWrap.appendChild(canvas);
+      card.appendChild(canvasWrap);
+      content.appendChild(card);
+
+      // Prepare data
+      const ctrlData = [], expData = [];
+      for (let d = 1; d <= 7; d++) {
+        const dayEntries = diaries.filter(dd => (dd.day == d) && ((dd.D1 || dd.answers?.D1) === "有"));
+        const ctrlE = dayEntries.filter(dd => dd.group === "control");
+        const expE = dayEntries.filter(dd => dd.group === "experimental");
+        const avg = (entries) => {
+          const vals = entries.map(e => parseFloat(e[m.key] || e.answers?.[m.key])).filter(v => !isNaN(v));
+          return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+        };
+        ctrlData.push(avg(ctrlE));
+        expData.push(avg(expE));
+      }
+
+      setTimeout(() => {
+        chartInstances[m.key] = new Chart(canvas, {
+          type: "line",
+          data: {
+            labels: ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"],
+            datasets: [
+              { label: "對照組", data: ctrlData, borderColor: "#2563eb", backgroundColor: "#2563eb22", tension: .3, spanGaps: true },
+              { label: "實驗組", data: expData, borderColor: "#db2777", backgroundColor: "#db277722", tension: .3, spanGaps: true },
+            ]
+          },
+          options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 1, max: 7 } }, plugins: { legend: { position: "bottom" } } }
+        });
+      }, 50);
+    });
+  }
+
+  if (state.dashTab === "tasks") {
+    // D7
+    const card1 = h("div", { className: "card" });
+    card1.appendChild(h("h3", {}, "D7 任務達成分佈"));
+    card1.appendChild(h("p", { className: "sub", style: { marginBottom: "12px" } }, "按組別統計所有日誌"));
+    const c1wrap = h("div", { className: "chart-container" });
+    const c1 = h("canvas"); c1wrap.appendChild(c1); card1.appendChild(c1wrap);
+    content.appendChild(card1);
+
+    const d7opts = ["完全完成", "部分完成", "沒有完成", "沒有特定目的"];
+    const d7ctrl = d7opts.map(o => diaries.filter(d => d.group === "control" && (d.D7 || d.answers?.D7) === o).length);
+    const d7exp = d7opts.map(o => diaries.filter(d => d.group === "experimental" && (d.D7 || d.answers?.D7) === o).length);
+    setTimeout(() => {
+      chartInstances.d7 = new Chart(c1, {
+        type: "bar",
+        data: { labels: d7opts, datasets: [
+          { label: "對照組", data: d7ctrl, backgroundColor: "#2563eb" },
+          { label: "實驗組", data: d7exp, backgroundColor: "#db2777" },
+        ]},
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom" } } }
+      });
+    }, 50);
+
+    // D6
+    const card2 = h("div", { className: "card" });
+    card2.appendChild(h("h3", {}, "D6 找到第一篇有用文章的時間"));
+    const c2wrap = h("div", { className: "chart-container" });
+    const c2 = h("canvas"); c2wrap.appendChild(c2); card2.appendChild(c2wrap);
+    content.appendChild(card2);
+
+    const d6opts = ["少於 1 分鐘", "1-3 分鐘", "超過 3 分鐘", "直到離開都沒有"];
+    const d6ctrl = d6opts.map(o => diaries.filter(d => d.group === "control" && (d.D6 || d.answers?.D6) === o).length);
+    const d6exp = d6opts.map(o => diaries.filter(d => d.group === "experimental" && (d.D6 || d.answers?.D6) === o).length);
+    setTimeout(() => {
+      chartInstances.d6 = new Chart(c2, {
+        type: "bar",
+        data: { labels: d6opts, datasets: [
+          { label: "對照組", data: d6ctrl, backgroundColor: "#2563eb" },
+          { label: "實驗組", data: d6exp, backgroundColor: "#db2777" },
+        ]},
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom" } } }
+      });
+    }, 50);
+  }
+
+  if (state.dashTab === "opentext") {
+    const card = h("div", { className: "card" });
+    card.appendChild(h("h3", { style: { marginBottom: "16px" } }, "開放題回應"));
+
+    const d9entries = diaries.filter(d => {
+      const v = d.D9 || d.answers?.D9;
+      return v && v !== "沒有" && v.trim();
+    });
+    const d10entries = diaries.filter(d => {
+      const v = d.D10 || d.answers?.D10;
+      return v && v !== "沒有" && v.trim();
+    });
+
+    card.appendChild(h("h4", { style: { fontSize: "13px", fontWeight: "700", color: "var(--accent)", marginBottom: "10px" } }, "D9 今天最有用的一篇新聞"));
+    if (d9entries.length === 0) card.appendChild(h("p", { style: { fontSize: "13px", color: "var(--muted)" } }, "尚無回應"));
+    d9entries.forEach(d => {
+      card.appendChild(h("div", { className: "ot-entry" },
+        h("span", { className: "ot-tag" }, d.pid + " D" + d.day),
+        h("span", { className: "ot-group" }, "(" + (d.group === "control" ? "對照" : "實驗") + ")"),
+        (d.D9 || d.answers?.D9)
+      ));
+    });
+
+    card.appendChild(h("h4", { style: { fontSize: "13px", fontWeight: "700", color: "var(--accent)", marginTop: "24px", marginBottom: "10px" } }, "D10 困惑、重複或不信任"));
+    if (d10entries.length === 0) card.appendChild(h("p", { style: { fontSize: "13px", color: "var(--muted)" } }, "尚無回應"));
+    d10entries.forEach(d => {
+      card.appendChild(h("div", { className: "ot-entry" },
+        h("span", { className: "ot-tag" }, d.pid + " D" + d.day),
+        h("span", { className: "ot-group" }, "(" + (d.group === "control" ? "對照" : "實驗") + ")"),
+        (d.D10 || d.answers?.D10)
+      ));
+    });
+
+    content.appendChild(card);
+  }
+
+  if (state.dashTab === "export") {
+    const card = h("div", { className: "card" });
+    card.appendChild(h("h3", { style: { marginBottom: "16px" } }, "資料匯出"));
+    card.appendChild(h("p", { style: { fontSize: "13px", color: "var(--muted)", marginBottom: "20px", lineHeight: "1.6" } },
+      "匯出 CSV 檔案，可用 Excel 或 R/Python 開啟分析。UTF-8 with BOM 編碼。"
+    ));
+
+    const btnRow = h("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap" } });
+    btnRow.appendChild(h("button", { className: "btn btn-primary", onClick: () => exportCSV("pretest", pretests) }, "匯出前測（" + pretests.length + " 筆）"));
+    btnRow.appendChild(h("button", { className: "btn btn-secondary", onClick: () => exportCSV("diary", diaries) }, "匯出日誌（" + diaries.length + " 筆）"));
+    btnRow.appendChild(h("button", { className: "btn btn-secondary", onClick: () => {
+      const blob = new Blob([JSON.stringify(state.localLog, null, 2)], { type: "application/json" });
+      const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+      a.download = "scmp_local_backup.json"; a.click();
+    } }, "匯出本地備份 (JSON)"));
+    card.appendChild(btnRow);
+
+    content.appendChild(card);
+  }
+
+  wrap.appendChild(content);
+  return wrap;
+}
+
+function exportCSV(type, data) {
+  let csv = "\uFEFF"; // BOM
+  if (type === "pretest") {
+    const headers = ["timestamp", "pid", "group", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11"];
+    csv += headers.join(",") + "\n";
+    data.forEach(r => {
+      const row = headers.map(h => {
+        let v = r[h] || r.answers?.[h] || "";
+        if (Array.isArray(v)) v = v.join("; ");
+        return '"' + String(v).replace(/"/g, '""') + '"';
+      });
+      csv += row.join(",") + "\n";
+    });
+  } else {
+    const headers = ["timestamp", "pid", "group", "day", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8a", "D8b", "D8c", "D8d", "D8e", "D9", "D10", "D11", "D11_source", "N1", "N2", "N3", "N4", "N5", "N6"];
+    csv += headers.join(",") + "\n";
+    data.forEach(r => {
+      const row = headers.map(h => {
+        let v = r[h] || r.answers?.[h] || "";
+        return '"' + String(v).replace(/"/g, '""') + '"';
+      });
+      csv += row.join(",") + "\n";
+    });
+  }
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+  a.download = "scmp_" + type + "_" + new Date().toISOString().slice(0, 10) + ".csv";
+  a.click();
+}
+
+// ── Main Render ──
+function render() {
+  const app = document.getElementById("app");
+  app.innerHTML = "";
+
+  let page;
+  switch (state.page) {
+    case "landing": page = renderLanding(); break;
+    case "pretest": page = renderConsent(); break;
+    case "pretest-form": page = renderPretestForm(); break;
+    case "diary-pick": page = renderDiaryPick(); break;
+    case "diary-form": page = renderDiaryForm(); break;
+    case "success-pretest": page = renderSuccess("pretest"); break;
+    case "success-diary": page = renderSuccess("diary"); break;
+    case "admin-login": page = renderAdminLogin(); break;
+    case "dashboard":
+      renderDashboard().then(p => { app.innerHTML = ""; app.appendChild(p); });
+      app.appendChild(h("div", { style: { textAlign: "center", padding: "60px", color: "var(--muted)" } }, "載入中…"));
+      return;
+    default: page = renderLanding();
+  }
+  app.appendChild(page);
+
+  // Toast
+  if (state.toast) {
+    const existing = document.querySelector(".toast");
+    if (existing) existing.remove();
+    document.body.appendChild(h("div", { className: "toast" }, state.toast));
+  } else {
+    const existing = document.querySelector(".toast");
+    if (existing) existing.remove();
+  }
+}
+
+// Boot
+render();
+</script>
+</body>
+</html>
