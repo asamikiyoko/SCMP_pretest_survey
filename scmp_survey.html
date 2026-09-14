@@ -195,8 +195,8 @@ textarea {
 // ╔══════════════════════════════════════════════════════════╗
 // ║  ⚙️  在这里粘贴你的 Google Apps Script Web App URL      ║
 // ╚══════════════════════════════════════════════════════════╝
-const API_URL = "https://script.google.com/macros/library/d/1qy9cEBEffE5pd-4stbjglZOeixTpvV4kZ26ICtqOn-0EImZJv4pi3EvA/1";  // ← 粘贴你的 URL，例如 "https://script.google.com/macros/s/xxxxx/exec"
-const ADMIN_PIN = "2026scmp";
+const API_URL = "";  // ← 粘贴你的 URL，例如 "https://script.google.com/macros/s/xxxxx/exec"
+const ADMIN_PIN = "2026";
 
 // ── Question Definitions ──
 const PRETEST_QS = [
@@ -309,7 +309,9 @@ function h(tag, attrs, ...children) {
   const el = document.createElement(tag);
   if (attrs) {
     for (const [k, v] of Object.entries(attrs)) {
+      if (v === undefined || v === null) continue;
       if (k === "style" && typeof v === "object") Object.assign(el.style, v);
+      else if (k === "disabled") { if (v) el.disabled = true; }
       else if (k.startsWith("on")) el.addEventListener(k.slice(2).toLowerCase(), v);
       else if (k === "className") el.className = v;
       else if (k === "innerHTML") el.innerHTML = v;
@@ -422,7 +424,7 @@ function renderLanding() {
   card.appendChild(h("label", { className: "label" }, "研究編號"));
   const pidInput = h("input", { type: "text", placeholder: "例如：S01", className: "mono", style: { letterSpacing: "2px", marginBottom: "18px" } });
   pidInput.value = state.pid;
-  pidInput.addEventListener("input", e => state.pid = e.target.value.toUpperCase());
+  pidInput.addEventListener("input", e => { state.pid = e.target.value.toUpperCase(); render(); });
   card.appendChild(pidInput);
 
   // Group
