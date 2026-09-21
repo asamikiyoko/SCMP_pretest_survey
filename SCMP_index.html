@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>SCMP 7-Day Pilot Study Survey</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --blue: #002244;
+  --blue-2: #003a70;
+  --blue-soft: #eef3f7;
+  --yellow: #FFB200;
+  --yellow-soft: #fff7df;
+  --bg: #f5f7f9;
+  --card: #ffffff;
+  --text: #102030;
+  --muted: #617083;
+  --border: #dbe2e8;
+  --border-strong: #a9b6c3;
+  --green: #198754;
+  --orange: #d97706;
+  --red: #b42318;
+  --radius: 12px;
+  --shadow: 0 10px 30px rgba(0, 34, 68, .07);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.6; min-height: 100vh;
+}
+body::before {
+  content: ""; display: block; height: 6px; background: var(--yellow);
+}
+.wrap { max-width: 680px; margin: 0 auto; padding: 28px 18px 64px; }
+.wrap-wide { max-width: 1040px; margin: 0 auto; padding: 28px 18px 64px; }
+
+h1 { font-size: 28px; font-weight: 760; letter-spacing: -.02em; color: var(--blue); }
+h2 { font-size: 22px; font-weight: 760; letter-spacing: -.01em; color: var(--blue); }
+h3 { font-size: 16px; font-weight: 720; color: var(--blue); }
+h4 { font-size: 14px; font-weight: 700; }
+.sub { font-size: 13px; color: var(--muted); margin-top: 5px; }
+.mono { font-family: "SF Mono", "Fira Code", "Consolas", monospace; }
+.tag {
+  display: inline-block; font-size: 11px; font-weight: 750; letter-spacing: 1.2px;
+  color: var(--blue); background: var(--yellow); border-radius: 999px; padding: 5px 10px;
+  font-family: "SF Mono", "Consolas", monospace;
+}
+
+.hero {
+  background: var(--blue); border-radius: 18px; padding: 28px 28px 26px; color: #fff;
+  box-shadow: var(--shadow); margin: 8px 0 20px; position: relative; overflow: hidden;
+}
+.hero::after {
+  content: ""; position: absolute; width: 140px; height: 140px; border: 22px solid rgba(255,178,0,.16);
+  border-radius: 50%; right: -55px; top: -58px;
+}
+.hero h1 { color: #fff; margin-top: 10px; position: relative; z-index: 1; }
+.hero .sub { color: rgba(255,255,255,.76); max-width: 520px; position: relative; z-index: 1; }
+
+.card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 15px;
+  padding: 24px; margin-bottom: 16px; box-shadow: 0 4px 18px rgba(0,34,68,.035);
+}
+.module-card {
+  display: grid; grid-template-columns: 54px 1fr auto; gap: 16px; align-items: center;
+  border: 1px solid var(--border); background: var(--card); padding: 18px 20px; border-radius: 14px;
+  margin-bottom: 12px; cursor: pointer; transition: transform .15s, border-color .15s, box-shadow .15s;
+}
+.module-card:hover { transform: translateY(-1px); border-color: var(--blue); box-shadow: var(--shadow); }
+.module-num {
+  width: 48px; height: 48px; display: grid; place-items: center; background: var(--blue);
+  color: var(--yellow); border-radius: 12px; font-weight: 800; font-family: "SF Mono", monospace;
+}
+.module-arrow { color: var(--blue); font-size: 22px; font-weight: 700; }
+
+.btn {
+  display: inline-block; padding: 12px 26px; border-radius: var(--radius); border: none;
+  font-size: 15px; font-weight: 680; cursor: pointer; transition: all .15s;
+}
+.btn-primary { background: var(--blue); color: #fff; border: 1px solid var(--blue); }
+.btn-primary:hover { background: var(--blue-2); border-color: var(--blue-2); }
+.btn-primary:disabled { opacity: .38; cursor: not-allowed; }
+.btn-secondary { background: #fff; color: var(--blue); border: 1.5px solid var(--border-strong); }
+.btn-secondary:hover { border-color: var(--blue); }
+.btn-yellow { background: var(--yellow); color: var(--blue); border: 1px solid var(--yellow); }
+.btn-ghost { background: none; color: var(--blue); padding: 8px 12px; }
+.btn-full { width: 100%; }
+.btn-back { background: none; border: none; color: var(--blue); cursor: pointer; font-size: 14px; margin-bottom: 20px; padding: 0; font-weight: 650; }
+
+input[type="text"], input[type="password"], input[type="number"] {
+  width: 100%; padding: 12px 14px; border-radius: 9px; border: 1.5px solid var(--border);
+  font-size: 16px; background: #fff; color: var(--text); outline: none;
+}
+input[type="text"]:focus, input[type="password"]:focus, input[type="number"]:focus, textarea:focus {
+  border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0,34,68,.08);
+}
+input[type="file"] {
+  width: 100%; padding: 12px; border: 1.5px dashed var(--border-strong); border-radius: 10px;
+  background: var(--blue-soft); color: var(--text);
+}
+textarea {
+  width: 100%; min-height: 92px; padding: 12px 14px; border-radius: 9px; border: 1.5px solid var(--border);
+  background: #fff; color: var(--text); font-size: 14px; resize: vertical; font-family: inherit; outline: none;
+}
+.label { font-size: 13px; font-weight: 680; color: var(--blue); display: block; margin-bottom: 7px; }
+
+.opt-grid { display: grid; gap: 7px 12px; }
+.opt-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.opt {
+  display: flex; align-items: flex-start; gap: 10px; padding: 10px 13px; border-radius: 9px;
+  cursor: pointer; transition: all .14s; user-select: none; font-size: 14px; line-height: 1.45;
+  background: #fff; border: 1.5px solid var(--border);
+}
+.opt:hover { border-color: #8ca1b3; }
+.opt.selected { background: var(--yellow-soft); border-color: var(--blue); }
+.opt.disabled { opacity: .42; cursor: not-allowed; }
+.radio-dot {
+  width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+  border: 2px solid var(--border-strong); background: #fff; transition: all .14s;
+}
+.opt.selected .radio-dot { border: 5px solid var(--blue); }
+.check-box {
+  width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0; display: flex;
+  align-items: center; justify-content: center; margin-top: 1px; border: 2px solid var(--border-strong);
+  background: #fff; color: var(--blue); font-size: 12px; font-weight: 800; transition: all .14s;
+}
+.opt.selected .check-box { background: var(--yellow); border-color: var(--blue); }
+
+.likert-row { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; }
+.likert-btn {
+  min-width: 45px; padding: 10px 0; border-radius: 9px; border: 1.5px solid var(--border);
+  background: #fff; color: var(--text); cursor: pointer; font-weight: 550;
+  font-size: 15px; transition: all .14s; text-align: center;
+}
+.likert-btn:hover { border-color: var(--blue); }
+.likert-btn.selected { background: var(--blue); color: #fff; border-color: var(--blue); font-weight: 750; }
+.likert-labels { display: flex; justify-content: space-between; margin-top: 7px; gap: 10px; font-size: 12px; color: var(--muted); }
+.na-btn {
+  margin-top: 10px; padding: 8px 15px; border-radius: 8px; font-size: 13px;
+  border: 1.5px solid var(--border); background: #fff; color: var(--text); cursor: pointer;
+}
+.na-btn.selected { border-color: var(--blue); background: var(--yellow-soft); color: var(--blue); font-weight: 650; }
+
+.q-card { background: #fff; border: 1px solid var(--border); border-radius: 13px; padding: 20px 22px; margin-bottom: 13px; }
+.q-title { font-size: 15px; font-weight: 630; margin-bottom: 15px; line-height: 1.55; }
+.q-id { color: var(--blue); margin-right: 8px; font-family: "SF Mono", monospace; font-size: 12px; font-weight: 800; }
+.q-optional { color: var(--muted); font-weight: 500; font-size: 12px; margin-left: 6px; }
+.other-box { margin-top: 10px; }
+
+.notice {
+  background: var(--yellow-soft); border-left: 4px solid var(--yellow); border-radius: 8px;
+  padding: 12px 15px; font-size: 13px; color: var(--blue); line-height: 1.55; margin-bottom: 22px;
+}
+.sec-header {
+  font-size: 14px; font-weight: 800; color: var(--blue); margin-top: 30px; margin-bottom: 12px;
+  padding: 0 0 8px; border-bottom: 3px solid var(--yellow); letter-spacing: .01em;
+}
+.progress {
+  height: 7px; background: #e7edf1; border-radius: 999px; overflow: hidden; margin: 10px 0 24px;
+}
+.progress > div { height: 100%; background: var(--yellow); border-radius: 999px; }
+
+.day-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.day-btn {
+  padding: 18px 4px; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer;
+  border: 1.5px solid var(--border); background: #fff; color: var(--blue); transition: all .15s;
+  text-align: center;
+}
+.day-btn:hover { border-color: var(--blue); }
+.day-btn.day7 { border-color: var(--yellow); box-shadow: inset 0 -4px 0 var(--yellow); }
+.day-btn.done { background: var(--blue); color: #fff; border-color: var(--blue); }
+.day-btn .done-label { font-size: 10px; margin-top: 3px; opacity: .8; font-weight: 550; }
+
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.stat-card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
+.stat-val { font-size: 28px; font-weight: 780; color: var(--blue); font-family: "SF Mono", monospace; }
+.stat-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.stat-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+.tabs { display: flex; gap: 2px; overflow-x: auto; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+.tab {
+  padding: 10px 14px; background: none; border: none; font-size: 13px; cursor: pointer;
+  white-space: nowrap; color: var(--muted); font-weight: 550; border-bottom: 3px solid transparent;
+}
+.tab.active { color: var(--blue); font-weight: 750; border-bottom-color: var(--yellow); }
+
+.matrix { width: 100%; border-collapse: collapse; font-size: 13px; }
+.matrix th { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--border); color: var(--muted); font-weight: 650; }
+.matrix td { padding: 9px 10px; border-bottom: 1px solid #f0f3f5; vertical-align: top; }
+.matrix th.center, .matrix td.center { text-align: center; }
+.dot {
+  display: inline-block; width: 27px; height: 27px; line-height: 27px; border-radius: 7px;
+  text-align: center; font-size: 12px; font-weight: 800; color: #fff;
+}
+.dot-used { background: var(--blue); }
+.dot-notused { background: var(--yellow); color: var(--blue); }
+.dot-missing { background: #dce3e8; color: var(--muted); }
+
+.ot-entry {
+  padding: 11px 14px; margin-bottom: 8px; border-radius: 9px; background: var(--blue-soft);
+  font-size: 13px; line-height: 1.55;
+}
+.ot-tag { font-family: "SF Mono", monospace; font-weight: 700; color: var(--blue); margin-right: 8px; }
+.chart-container { position: relative; height: 280px; margin-bottom: 8px; }
+
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: var(--blue); color: #fff; padding: 12px 22px; border-radius: 10px;
+  font-size: 14px; font-weight: 650; z-index: 9999; box-shadow: var(--shadow); animation: fadeup .25s;
+}
+@keyframes fadeup { from { opacity: 0; transform: translateX(-50%) translateY(10px); } }
+.success { text-align: center; padding: 72px 20px; }
+.success .icon {
+  width: 62px; height: 62px; display: grid; place-items: center; margin: 0 auto 18px;
+  border-radius: 50%; background: var(--yellow); color: var(--blue); font-size: 30px; font-weight: 900;
+}
+.file-meta { margin-top: 8px; font-size: 12px; color: var(--muted); }
+
+@media (max-width: 560px) {
+  .opt-grid.cols-2 { grid-template-columns: 1fr; }
+  .day-grid { grid-template-columns: repeat(2, 1fr); }
+  .stat-grid { grid-template-columns: 1fr 1fr; }
+  .module-card { grid-template-columns: 46px 1fr auto; padding: 16px; }
+  .module-num { width: 42px; height: 42px; }
+  .hero { padding: 24px 20px; }
+  h1 { font-size: 24px; }
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+// Google Apps Script Web App endpoint
+const API_URL = "https://script.google.com/macros/s/AKfycbzhUG_d6_DQae6rtEKfpOENPLSuffHMdC5c0hK1dPQu3PeeTXeYvWXkBwrXwCktNoc/exec";
+const ADMIN_PIN = "2026";
+
+const AGE_OPTS = ["Under 18","18–24","25–34","35–44","45–54","55–64","65 or older","Prefer not to answer"];
+const GENDER_OPTS = ["Female","Male","Non-binary","Prefer to self-describe","Prefer not to answer"];
+const EDUCATION_OPTS = [
+  "Primary school or below",
+  "Lower Secondary (Secondary 1–3)",
+  "Upper Secondary (Secondary 4–6 / DSE / HKCEE / HKALE)",
+  "Post-secondary (Diploma / Higher Diploma / Associate Degree)",
+  "Undergraduate (Bachelor’s Degree)",
+  "Postgraduate or above (Master’s / PhD)",
+  "Prefer not to answer"
+];
+const ROLE_OPTS = [
+  "Undergraduate student",
+  "Postgraduate student (Master’s / PhD)",
+  "Academic or teaching staff",
+  "Research staff",
+  "Administrative or support staff",
+  "Other",
+  "Prefer not to answer"
+];
+const DISCIPLINE_OPTS = [
+  "Business & Finance (e.g., Accounting, Marketing, Economics, Management)",
+  "Engineering & Technology (e.g., Computer Science, Civil Engineering, AI)",
+  "Medicine & Health Sciences (e.g., Nursing, Pharmacy, Public Health, Dentistry)",
+  "Science & Mathematics (e.g., Biology, Chemistry, Physics, Statistics)",
+  "Social Sciences (e.g., Psychology, Sociology, Politics, Communication)",
+  "Arts & Humanities (e.g., History, Literature, Philosophy, Languages)",
+  "Design, Architecture & Fine Arts (e.g., Urban Planning, Visual Arts)",
+  "Law & Legal Studies",
+  "Education (e.g., Pedagogy, Educational Administration)",
+  "Other",
+  "Not applicable / Prefer not to answer"
+];
+const NEWS_CHANNELS = [
+  "Newspaper or magazines","Television","Radio","News organizations' app","News websites",
+  "Social media","Search engine or news aggregator","E-newsletter","Generative AI","Other"
+];
+const NEWS_TOPICS = [
+  "Hong Kong local politics and policy","Mainland China","Global affairs","Economy & Business",
+  "War and Military","Court","Technology, health, and innovation","Environment and climate",
+  "Culture, lifestyles and sports"
+];
+const NEWS_REASONS = [
+  "To find out first-hand information about important issues",
+  "To acquire new ideas and perspectives",
+  "To compare my ideas to those of others",
+  "To have interesting things to talk about with others",
+  "Because it is entertaining",
+  "To pass time"
+];
+const ATTITUDE_ITEMS = [
+  "I can find the news I want",
+  "I can tell the meaning of the news",
+  "I can tell the importance of the news",
+  "I feel overloaded with the amount of news available",
+  "I face too much news",
+  "I receive more news than I can process",
+  "I try to expose myself to all the opinions heard in the media equally",
+  "It is important for me to read not just articles supporting my views, but also articles opposing my views",
+  "I feel it useless to read the news",
+  "I’d like to reduce the amount of time I spend on news consumption",
+  "I do not want to waste time reading the news",
+  "News content selected especially for me is more relevant to my interests than general news",
+  "I would spend more time using a news app that selects content based on my personal interests",
+  "I would return to a news source that tailors content to me more often"
+];
+
+const DEMOGRAPHICS_QS = [
+  { id:"DEM1", text:"What is your age?", type:"single", opts:AGE_OPTS },
+  { id:"DEM2", text:"How do you describe your gender identity?", type:"single", opts:GENDER_OPTS, otherTrigger:"Prefer to self-describe", otherId:"DEM2_other", otherPlaceholder:"Please self-describe" },
+  { id:"DEM3", text:"What is the highest level of education you have completed?", type:"single", opts:EDUCATION_OPTS },
+  { id:"DEM4", text:"Which of the following best describes your current role?", type:"single", opts:ROLE_OPTS, otherTrigger:"Other", otherId:"DEM4_other", otherPlaceholder:"Please specify your current role" },
+  { id:"DEM5", text:"Which of the following broad areas best describes your professional background or academic discipline?", type:"single", opts:DISCIPLINE_OPTS, otherTrigger:"Other", otherId:"DEM5_other", otherPlaceholder:"Please specify your background or discipline" }
+];
+
+const PRE_NEWS_HABIT_QS = [
+  { id:"PRE1", text:"How often do you consume news?", type:"single", opts:["Multiple times a day","At least once a day","A few times a week","Less than once a week"] },
+  { id:"PRE2", text:"In the past 7 days, what channels did you use to receive news? (Select up to 5)", type:"multi", max:5, opts:NEWS_CHANNELS, otherTrigger:"Other", otherId:"PRE2_other", otherPlaceholder:"Please specify the other channel" },
+  { id:"PRE3", text:"In the past 7 days, which channel did you use most for news?", type:"single", opts:NEWS_CHANNELS, otherTrigger:"Other", otherId:"PRE3_other", otherPlaceholder:"Please specify the other channel" },
+  { id:"PRE4", text:"What are the news topics that you are interested in? (Select all that apply)", type:"multi", opts:NEWS_TOPICS }
+];
+
+const PRE_MOTIVATION_QS = NEWS_REASONS.map((text, i) => ({
+  id:"PRE5_" + (i + 1), text, type:"likert5", leftLabel:"Strongly disagree", rightLabel:"Strongly agree"
+}));
+
+const PRE_GENERAL_QS = [
+  { id:"PRE6", text:"Overall, I prefer social media over a news app for consuming news.", type:"likert5", leftLabel:"Strongly disagree", rightLabel:"Strongly agree" },
+  { id:"PRE7", text:"Thinking of the news app you use most (currently or previously), this app’s capabilities meet my requirements.", type:"likert5", leftLabel:"Strongly disagree", rightLabel:"Strongly agree" },
+  { id:"PRE8", text:"Thinking of the news app you use most (currently or previously), this app is easy to use.", type:"likert5", leftLabel:"Strongly disagree", rightLabel:"Strongly agree" }
+];
+
+const PRE_ATTITUDE_QS = ATTITUDE_ITEMS.map((text, i) => ({
+  id:"PRE_ATT" + (i + 10), text, type:"likert5", leftLabel:"Strongly disagree", rightLabel:"Strongly agree"
+}));
+
+const PRE_SCMP_QS = [
+  { id:"PRE_SCMP1", text:"How often do you use SCMP news sources?", type:"single", opts:["Never","Used before","Currently less than once a week","1 to 3 days a week","4 to 7 days a week"] },
+  { id:"PRE_SCMP2", text:"What is your relationship with SCMP?", type:"single", opts:["Never registered","Free registration","Subscribed before","Currently subscribe"] }
+];
+
+const PRETEST_QS = [...DEMOGRAPHICS_QS, ...PRE_NEWS_HABIT_QS, ...PRE_MOTIVATION_QS, ...PRE_GENERAL_QS, ...PRE_ATTITUDE_QS, ...PRE_SCMP_QS];
+
+const DAILY_BASIC_QS = [
+  { id:"D1", text:"Did you use the SCMP app today?", type:"single", opts:["Yes","No"] },
+  { id:"D2", text:"What was the main reason you did not use the SCMP app today?", type:"single", opts:["No need to read the news today","Too busy","Forgot / did not think of SCMP","Mainly used other news sources","Could not find content I wanted to read","Technical / login issues","Other"], otherTrigger:"Other", otherId:"D2_other", otherPlaceholder:"Please specify the reason" },
+  { id:"D3", text:"Did you access news through other sources today?", type:"single", opts:["Yes","No"] },
+  { id:"D3a", text:"What was the main alternative news source you used today?", type:"single", opts:[
+    "Other news organization apps / websites (e.g., RTHK, HK01, BBC)",
+    "Social media (e.g., Facebook, X, Instagram, Reddit, Threads)",
+    "Search engines (e.g., Google, Bing, Yahoo)",
+    "News aggregators (e.g., Apple News, Google News, Yahoo News)",
+    "AI tools (e.g., ChatGPT, Perplexity, Gemini, Claude)",
+    "TV / radio / print (e.g., broadcasts, radio, physical newspapers or magazines)",
+    "Shared by family or friends (e.g., WhatsApp, WeChat, Telegram, or word-of-mouth)",
+    "Other"
+  ], otherTrigger:"Other", otherId:"D3a_other", otherPlaceholder:"Please specify the alternative source" }
+];
+
+const DAILY_PRODUCT_QS = [
+  { id:"DU1", text:"Today, the new SCMP app helped me find the news I wanted to read.", type:"likert7" },
+  { id:"DU2", text:"Today, the new SCMP app made it easier for me to find news that was useful for what I wanted to know.", type:"likert7" },
+  { id:"DU3", text:"Today, the new SCMP app gave me useful suggestions for my news reading.", type:"likert7" },
+  { id:"DR1", text:"Today, the news recommended by the new SCMP app matched my interests.", type:"likert7" },
+  { id:"DR2", text:"Today, the news recommended by the new SCMP app was relevant to what I wanted to read.", type:"likert7" },
+  { id:"DR3", text:"Today, the news recommended by the new SCMP app reflected my news interests and preferences.", type:"likert7" },
+  { id:"DE1", text:"Today, I found the new SCMP app easy to use.", type:"likert7" },
+  { id:"DE2", text:"Today, I could easily find the news I wanted in the new SCMP app.", type:"likert7" },
+  { id:"DE3", text:"Today, I could navigate the new SCMP app without difficulty.", type:"likert7" }
+];
+
+const CONTENT_TYPES = [
+  "Hong Kong news","China news","World / International news","Politics and current affairs",
+  "Business and finance","Economy","Technology and innovation","Science and health",
+  "Environment and climate","Sports","Society","Education","Culture and arts","Lifestyle",
+  "Entertainment","Opinion / Commentary","Other"
+];
+
+const DAILY_REFLECTION_QS = [
+  { id:"DS1", text:"Which type of SCMP content did you find most engaging today?", type:"single", opts:CONTENT_TYPES, otherTrigger:"Other", otherId:"DS1_other", otherPlaceholder:"Please specify the content type" },
+  { id:"DS2", text:"Is there anything else you would like to tell us about your experience today?", type:"text", required:false, ph:"Optional" }
+];
+
+const POST_MOTIVATION_QS = NEWS_REASONS.map((text, i) => ({
+  id:"POST1_" + (i + 1), text, type:"likert5", leftLabel:"Strongly disagree", rightLabel:"Strongly agree"
+}));
+const POST_GENERAL_QS = [
+  { id:"POST2", text:"Overall, I prefer social media over a news app for consuming news.", type:"likert5", leftLabel:"Strongly disagree", rightLabel:"Strongly agree" },
+  { id:"POST3", text:"This SCMP app’s capabilities meet my requirements. Please consider the intended app design, not technical aspects such as the connection procedure for the trial.", type:"likert5", leftLabel:"Strongly disagree", rightLabel:"Strongly agree" },
+  { id:"POST4", text:"This SCMP app is easy to use. Please consider the intended app design, not technical aspects such as the connection procedure for the trial.", type:"likert5", leftLabel:"Strongly disagree", rightLabel:"Strongly agree" }
+];
+const POST_ATTITUDE_QS = ATTITUDE_ITEMS.map((text, i) => ({
+  id:"POST_ATT" + (i + 10), text, type:"likert5", leftLabel:"Strongly disagree", rightLabel:"Strongly agree"
+}));
+const POSTTEST_QS = [...POST_MOTIVATION_QS, ...POST_GENERAL_QS, ...POST_ATTITUDE_QS];
+
+const ISSUE_QS = [
+  { id:"IR1", text:"What type of issue did you encounter?", type:"single", opts:["Bug","Crash","Slow performance / lag","UI display issue","Navigation / interaction flow issue","Recommended content issue","Login / account issue","Other"], otherTrigger:"Other", otherId:"IR1_other", otherPlaceholder:"Please specify the issue type" },
+  { id:"IR2", text:"Please describe the issue in detail.", type:"text", ph:"What happened?" },
+  { id:"IR3", text:"Please describe the steps you took, in the actual order, so that the product and development teams can reproduce the same situation.", type:"text", ph:"Example:\nStep 1: Open the SCMP app and go to Discover\nStep 2: Open the first article\nStep 3: Return to the previous page\nStep 4: Describe what happened" },
+  { id:"IR4", text:"How much did this issue affect your experience?", type:"single", opts:["Very little; I could continue using the app normally","Somewhat","A lot","I was unable to complete what I originally wanted to do"] },
+  { id:"IR5", text:"How often did this issue occur?", type:"single", opts:["Every time","Occasionally","Only once","Not sure"] }
+];
+
+const QUESTION_REFERENCES = {};
+PRETEST_QS.forEach(q => QUESTION_REFERENCES[q.id] = "Pre-test survey draft");
+DAILY_BASIC_QS.concat(DAILY_PRODUCT_QS, DAILY_REFLECTION_QS).forEach(q => QUESTION_REFERENCES[q.id] = "7-day diary survey draft");
+POSTTEST_QS.forEach(q => QUESTION_REFERENCES[q.id] = "Day-7 post-test survey draft");
+ISSUE_QS.forEach(q => QUESTION_REFERENCES[q.id] = "Separate Issue Report");
+
+let state = {
+  page: "landing",
+  pid: "",
+  diaryDay: null,
+  answers: {},
+  issueFile: null,
+  toast: "",
+  dashData: null,
+  dashTab: "overview",
+  adminAuthed: false,
+  localLog: JSON.parse(localStorage.getItem("scmp_log_en_v3") || "[]"),
+  completedDays: JSON.parse(localStorage.getItem("scmp_days_en_v3") || "{}")
+};
+
+function setState(patch) {
+  Object.assign(state, patch);
+  render();
+}
+
+async function submitData(payload, options = {}) {
+  const localPayload = JSON.parse(JSON.stringify(payload));
+  if (localPayload.attachment && localPayload.attachment.data) {
+    localPayload.attachment.data = "[not stored in localStorage]";
+  }
+  state.localLog.push({ ...localPayload, _localTime: new Date().toISOString() });
+  try {
+    localStorage.setItem("scmp_log_en_v3", JSON.stringify(state.localLog));
+  } catch (e) {
+    // If localStorage is full, keep the remote submission path available.
+  }
+
+  if (!API_URL) {
+    showToast("API URL is not configured. Data has been saved locally.");
+    return true;
+  }
+  try {
+    await fetch(API_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify(payload)
+    });
+    return true;
+  } catch (e) {
+    showToast("Network error. A local backup has been kept.");
+    return true;
+  }
+}
+
+async function fetchDashboard() {
+  if (!API_URL) {
+    return localDashboardData();
+  }
+  try {
+    const r = await fetch(API_URL + "?action=all");
+    const d = await r.json();
+    return {
+      pretest: d.pretest || [],
+      diary: d.diary || [],
+      issue: d.issue || d.issues || [],
+      participants: d.participants || []
+    };
+  } catch {
+    showToast("Unable to load remote data. Showing local data instead.");
+    return localDashboardData();
+  }
+}
+
+function localDashboardData() {
+  const pretests = state.localLog.filter(l => l.type === "pretest");
+  const diaries = state.localLog.filter(l => l.type === "diary");
+  const issues = state.localLog.filter(l => l.type === "issue");
+  return {
+    pretest: pretests.map(p => ({ ...p.answers, pid:p.pid, timestamp:p._localTime })),
+    diary: diaries.map(d => ({ ...d.answers, pid:d.pid, day:d.day, timestamp:d._localTime })),
+    issue: issues.map(i => ({ ...i.answers, pid:i.pid, timestamp:i._localTime, attachment:i.attachment }))
+  };
+}
+
+function showToast(msg) {
+  state.toast = msg;
+  render();
+  setTimeout(() => { state.toast = ""; render(); }, 3200);
+}
+
+function h(tag, attrs, ...children) {
+  const el = document.createElement(tag);
+  if (attrs) {
+    for (const [k, v] of Object.entries(attrs)) {
+      if (v === undefined || v === null) continue;
+      if (k === "style" && typeof v === "object") Object.assign(el.style, v);
+      else if (k === "disabled") { if (v) el.disabled = true; }
+      else if (k.startsWith("on")) el.addEventListener(k.slice(2).toLowerCase(), v);
+      else if (k === "className") el.className = v;
+      else if (k === "innerHTML") el.innerHTML = v;
+      else el.setAttribute(k, v);
+    }
+  }
+  for (const c of children.flat()) {
+    if (c == null) continue;
+    el.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
+  }
+  return el;
+}
+
+function renderRadio(opts, value, onChange) {
+  const grid = h("div", { className: "opt-grid" + (opts.length > 4 ? " cols-2" : "") });
+  opts.forEach(opt => {
+    grid.appendChild(h("div", {
+      className: "opt" + (value === opt ? " selected" : ""),
+      onClick: () => onChange(opt)
+    }, h("span", { className: "radio-dot" }), h("span", {}, opt)));
+  });
+  return grid;
+}
+
+function renderCheckbox(opts, values, onChange, max) {
+  values = values || [];
+  const grid = h("div", { className: "opt-grid cols-2" });
+  opts.forEach(opt => {
+    const selected = values.includes(opt);
+    const full = max && values.length >= max && !selected;
+    grid.appendChild(h("div", {
+      className: "opt" + (selected ? " selected" : "") + (full ? " disabled" : ""),
+      onClick: () => {
+        if (selected) onChange(values.filter(v => v !== opt));
+        else if (!full) onChange([...values, opt]);
+      }
+    }, h("span", { className: "check-box" }, selected ? "✓" : ""), h("span", {}, opt)));
+  });
+  return grid;
+}
+
+function renderLikert(value, onChange, max, leftLabel, rightLabel, naOpt, naText) {
+  const wrap = h("div");
+  const row = h("div", { className: "likert-row" });
+  for (let i = 1; i <= max; i++) {
+    row.appendChild(h("button", {
+      type: "button",
+      className: "likert-btn" + (value === i ? " selected" : ""),
+      onClick: () => onChange(i)
+    }, String(i)));
+  }
+  wrap.appendChild(row);
+  wrap.appendChild(h("div", { className: "likert-labels" },
+    h("span", {}, leftLabel || (max === 7 ? "Strongly disagree" : "1")),
+    h("span", {}, rightLabel || (max === 7 ? "Strongly agree" : String(max)))
+  ));
+  if (naOpt) {
+    wrap.appendChild(h("button", {
+      type: "button",
+      className: "na-btn" + (value === "N/A" ? " selected" : ""),
+      onClick: () => onChange("N/A")
+    }, naText || "Not applicable"));
+  }
+  return wrap;
+}
+
+function renderQuestion(q, value, onChange) {
+  const card = h("div", { className: "q-card" });
+  const title = h("p", { className: "q-title" },
+    h("span", { className: "q-id" }, q.id),
+    q.text,
+    q.required === false ? h("span", { className: "q-optional" }, "(optional)") : null
+  );
+  card.appendChild(title);
+
+  if (q.type === "single") card.appendChild(renderRadio(q.opts, value, onChange));
+  else if (q.type === "multi") card.appendChild(renderCheckbox(q.opts, value, onChange, q.max));
+  else if (q.type === "likert7") card.appendChild(renderLikert(value, onChange, 7, q.leftLabel, q.rightLabel, q.na, q.naText));
+  else if (q.type === "likert5") card.appendChild(renderLikert(value, onChange, 5, q.leftLabel, q.rightLabel, q.na, q.naText));
+  else if (q.type === "text") {
+    const ta = h("textarea", { placeholder: q.ph || "" });
+    ta.value = value || "";
+    ta.addEventListener("input", e => onChange(e.target.value));
+    card.appendChild(ta);
+  }
+
+  if (q.otherId) {
+    const shouldShow = q.type === "multi"
+      ? Array.isArray(value) && value.includes(q.otherTrigger)
+      : value === q.otherTrigger;
+    if (shouldShow) {
+      const input = h("input", { type:"text", placeholder:q.otherPlaceholder || "Please specify", className:"other-box" });
+      input.value = state.answers[q.otherId] || "";
+      input.addEventListener("input", e => { state.answers[q.otherId] = e.target.value; });
+      card.appendChild(input);
+    }
+  }
+  return card;
+}
+
+function questionComplete(q) {
+  if (q.required === false) return true;
+  const v = state.answers[q.id];
+  if (q.type === "multi") {
+    if (!Array.isArray(v) || v.length === 0) return false;
+  } else if (q.type === "text") {
+    if (!v || !String(v).trim()) return false;
+  } else if (v === undefined || v === "") {
+    return false;
+  }
+  if (q.otherId) {
+    const needsOther = q.type === "multi"
+      ? Array.isArray(v) && v.includes(q.otherTrigger)
+      : v === q.otherTrigger;
+    if (needsOther && !String(state.answers[q.otherId] || "").trim()) return false;
+  }
+  return true;
+}
+
+function collectAnswers(questions) {
+  const out = {};
+  questions.forEach(q => {
+    if (state.answers[q.id] !== undefined) out[q.id] = state.answers[q.id];
+    if (q.otherId && state.answers[q.otherId] !== undefined) out[q.otherId] = state.answers[q.otherId];
+  });
+  return out;
+}
+
+function progressBar(done, total) {
+  const pct = total ? Math.round(done / total * 100) : 0;
+  return h("div", {},
+    h("div", { style:{ display:"flex", justifyContent:"space-between", fontSize:"12px", color:"var(--muted)" } },
+      h("span", {}, "Progress"), h("span", {}, pct + "%")
+    ),
+    h("div", { className:"progress" }, h("div", { style:{ width:pct + "%" } }))
+  );
+}
+
+function renderLanding() {
+  const wrap = h("div", { className:"wrap" });
+  wrap.appendChild(h("div", { className:"hero" },
+    h("span", { className:"tag" }, "SCMP RESEARCH"),
+    h("h1", {}, "7-Day Pilot Study"),
+    h("p", { className:"sub" }, "Complete the pre-test once, the diary each day for seven days, and submit a separate issue report whenever you encounter a problem.")
+  ));
+
+  const idCard = h("div", { className:"card" });
+  idCard.appendChild(h("label", { className:"label" }, "Research ID"));
+  const pid = h("input", { type:"text", placeholder:"For example: S01", className:"mono", style:{ letterSpacing:"1.5px" } });
+  pid.value = state.pid;
+  pid.addEventListener("input", e => { state.pid = e.target.value.toUpperCase().trim(); });
+  idCard.appendChild(pid);
+  idCard.appendChild(h("p", { className:"sub" }, "Use the same research ID for all three parts."));
+  wrap.appendChild(idCard);
+
+  const modules = [
+    { n:"01", title:"Pre-test", desc:"Demographics and baseline survey", page:"pretest" },
+    { n:"02", title:"7-Day Diary", desc:"Daily diary for Days 1–7; Day 7 also includes the post-survey", page:"diary-pick" },
+    { n:"03", title:"Separate Issue Report", desc:"Report bugs, crashes, performance, UI, navigation, recommendation, or account issues", page:"issue-form" }
+  ];
+  modules.forEach(m => {
+    wrap.appendChild(h("div", {
+      className:"module-card",
+      onClick:() => {
+        if (!state.pid) { showToast("Enter your Research ID first."); return; }
+        state.answers = {};
+        state.issueFile = null;
+        setState({ page:m.page });
+      }
+    },
+      h("div", { className:"module-num" }, m.n),
+      h("div", {}, h("h3", {}, m.title), h("p", { className:"sub" }, m.desc)),
+      h("div", { className:"module-arrow" }, "›")
+    ));
+  });
+
+  wrap.appendChild(h("div", { style:{ textAlign:"center", marginTop:"30px" } },
+    h("button", {
+      style:{ background:"none", border:"none", color:"var(--muted)", fontSize:"13px", cursor:"pointer", textDecoration:"underline" },
+      onClick:() => setState({ page:"admin-login" })
+    }, "Researcher login")
+  ));
+  return wrap;
+}
+
+function renderPretestIntro() {
+  const wrap = h("div", { className:"wrap" });
+  wrap.appendChild(h("button", { className:"btn-back", onClick:() => setState({ page:"landing" }) }, "← Back"));
+  const card = h("div", { className:"card" });
+  card.appendChild(h("span", { className:"tag" }, "PART 1"));
+  card.appendChild(h("h2", { style:{ marginTop:"10px" } }, "Pre-test"));
+  card.appendChild(h("p", { style:{ fontSize:"14px", color:"var(--muted)", marginTop:"14px", lineHeight:"1.75" } },
+    "This section asks about your demographics, usual news habits, reasons for consuming news, attitudes toward news, and your current relationship with SCMP. Please answer based on your normal experience before the seven-day study."
+  ));
+  card.appendChild(h("button", {
+    className:"btn btn-primary btn-full", style:{ marginTop:"22px" },
+    onClick:() => { state.answers = {}; setState({ page:"pretest-form" }); }
+  }, "Begin pre-test"));
+  wrap.appendChild(card);
+  return wrap;
+}
+
+function renderPretestForm() {
+  const wrap = h("div", { className:"wrap" });
+  wrap.appendChild(h("div", { style:{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"18px" } },
+    h("button", { className:"btn-back", style:{ margin:0 }, onClick:() => setState({ page:"landing" }) }, "← Back"),
+    h("span", { className:"mono", style:{ fontSize:"12px", color:"var(--muted)" } }, state.pid + " · Pre-test")
+  ));
+  wrap.appendChild(h("h2", {}, "Pre-test"));
+  wrap.appendChild(h("p", { className:"sub", style:{ marginBottom:"12px" } }, "Part 1 of 3"));
+
+  const requiredQs = PRETEST_QS.filter(q => q.required !== false);
+  const completed = requiredQs.filter(questionComplete).length;
+  wrap.appendChild(progressBar(completed, requiredQs.length));
+
+  const addSet = (title, qs, notice) => {
+    wrap.appendChild(h("div", { className:"sec-header" }, title));
+    if (notice) wrap.appendChild(h("div", { className:"notice" }, notice));
+    qs.forEach(q => wrap.appendChild(renderQuestion(q, state.answers[q.id], v => { state.answers[q.id] = v; render(); })));
+  };
+
+  addSet("A. Demographics", DEMOGRAPHICS_QS);
+  addSet("B. News habits", PRE_NEWS_HABIT_QS);
+  addSet("C. Reasons for consuming news", PRE_MOTIVATION_QS, "For the following statements, use a 5-point scale from 1 = Strongly disagree to 5 = Strongly agree.");
+  addSet("D. News-app preference and usability baseline", PRE_GENERAL_QS);
+  addSet("E. News attitude and perception", PRE_ATTITUDE_QS, "Please respond based on your general feelings or perceptions about reading news.");
+  addSet("F. SCMP readership and subscription", PRE_SCMP_QS);
+
+  const allDone = PRETEST_QS.every(questionComplete);
+  const footer = h("div", { style:{ marginTop:"22px", textAlign:"right" } });
+  footer.appendChild(h("button", {
+    className:"btn btn-primary",
+    disabled:!allDone,
+    onClick:async() => {
+      if (!allDone) return;
+      await submitData({ type:"pretest", pid:state.pid, answers:collectAnswers(PRETEST_QS) });
+      setState({ page:"success-pretest" });
+    }
+  }, "Submit pre-test"));
+  if (!allDone) footer.appendChild(h("p", { className:"sub" }, "Complete all required questions before submitting."));
+  wrap.appendChild(footer);
+  return wrap;
+}
+
+function renderDiaryPick() {
+  const wrap = h("div", { className:"wrap" });
+  wrap.appendChild(h("button", { className:"btn-back", onClick:() => setState({ page:"landing" }) }, "← Back"));
+  wrap.appendChild(h("span", { className:"tag" }, "PART 2"));
+  wrap.appendChild(h("h2", { style:{ marginTop:"10px" } }, "7-Day Diary"));
+  wrap.appendChild(h("p", { className:"sub", style:{ marginBottom:"22px" } }, "Select the day you are completing. Day 7 includes the post-survey after the daily diary."));
+
+  const done = state.completedDays[state.pid] || [];
+  const grid = h("div", { className:"day-grid" });
+  for (let d = 1; d <= 7; d++) {
+    const isDone = done.includes(d);
+    const btn = h("button", {
+      className:"day-btn" + (d === 7 ? " day7" : "") + (isDone ? " done" : ""),
+      onClick:() => { state.answers = {}; setState({ page:"diary-form", diaryDay:d }); }
+    }, "Day " + d);
+    if (d === 7 && !isDone) btn.appendChild(h("div", { className:"done-label" }, "+ post-survey"));
+    if (isDone) btn.appendChild(h("div", { className:"done-label" }, "Completed"));
+    grid.appendChild(btn);
+  }
+  wrap.appendChild(grid);
+  return wrap;
+}
+
+function diaryVisibleQuestions() {
+  const a = state.answers;
+  const qs = [DAILY_BASIC_QS[0]];
+  if (a.D1 === "No") qs.push(DAILY_BASIC_QS[1]);
+  qs.push(DAILY_BASIC_QS[2]);
+  if (a.D3 === "Yes") qs.push(DAILY_BASIC_QS[3]);
+  if (a.D1 === "Yes") qs.push(...DAILY_PRODUCT_QS, ...DAILY_REFLECTION_QS);
+  if (state.diaryDay === 7) qs.push(...POSTTEST_QS);
+  return qs;
+}
+
+function renderDiaryForm() {
+  const wrap = h("div", { className:"wrap" });
+  const day = state.diaryDay;
+  const a = state.answers;
+
+  wrap.appendChild(h("div", { style:{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"18px" } },
+    h("button", { className:"btn-back", style:{ margin:0 }, onClick:() => setState({ page:"diary-pick" }) }, "← Select day"),
+    h("span", { className:"mono", style:{ fontSize:"12px", color:"var(--muted)" } }, state.pid + " · Day " + day)
+  ));
+
+  wrap.appendChild(h("h2", {}, "Day " + day + " Diary"));
+  wrap.appendChild(h("div", { className:"notice", style:{ marginTop:"12px" } },
+    "Please think only about your news consumption today. Complete the diary even if you did not open SCMP today."
+  ));
+
+  wrap.appendChild(h("div", { className:"sec-header" }, "A. SCMP use today"));
+  wrap.appendChild(renderQuestion(DAILY_BASIC_QS[0], a.D1, v => { state.answers.D1 = v; render(); }));
+  if (a.D1 === "No") {
+    wrap.appendChild(renderQuestion(DAILY_BASIC_QS[1], a.D2, v => { state.answers.D2 = v; render(); }));
+  }
+  wrap.appendChild(renderQuestion(DAILY_BASIC_QS[2], a.D3, v => { state.answers.D3 = v; render(); }));
+  if (a.D3 === "Yes") {
+    wrap.appendChild(renderQuestion(DAILY_BASIC_QS[3], a.D3a, v => { state.answers.D3a = v; render(); }));
+  }
+
+  if (a.D1 === "Yes") {
+    wrap.appendChild(h("div", { className:"sec-header" }, "B. SCMP product experience"));
+    wrap.appendChild(h("div", { className:"notice" }, "For the following items, use a 7-point scale from 1 = Strongly disagree to 7 = Strongly agree."));
+    DAILY_PRODUCT_QS.slice(0,3).forEach(q => wrap.appendChild(renderQuestion(q, a[q.id], v => { state.answers[q.id] = v; render(); })));
+
+    wrap.appendChild(h("div", { className:"sec-header", style:{ marginTop:"20px" } }, "C. Recommendation relevance"));
+    DAILY_PRODUCT_QS.slice(3,6).forEach(q => wrap.appendChild(renderQuestion(q, a[q.id], v => { state.answers[q.id] = v; render(); })));
+
+    wrap.appendChild(h("div", { className:"sec-header", style:{ marginTop:"20px" } }, "D. Ease of use"));
+    DAILY_PRODUCT_QS.slice(6).forEach(q => wrap.appendChild(renderQuestion(q, a[q.id], v => { state.answers[q.id] = v; render(); })));
+
+    wrap.appendChild(h("div", { className:"sec-header" }, "E. Short reflection"));
+    DAILY_REFLECTION_QS.forEach(q => wrap.appendChild(renderQuestion(q, a[q.id], v => { state.answers[q.id] = v; render(); })));
+  }
+
+  if (day === 7) {
+    wrap.appendChild(h("div", { className:"sec-header" }, "F. Day-7 post-survey"));
+    wrap.appendChild(h("div", { className:"notice" }, "This post-survey appears only on Day 7. Please answer based on your experience after the seven-day study."));
+    wrap.appendChild(h("h3", { style:{ margin:"18px 0 10px" } }, "Reasons for consuming news"));
+    POST_MOTIVATION_QS.forEach(q => wrap.appendChild(renderQuestion(q, a[q.id], v => { state.answers[q.id] = v; render(); })));
+    wrap.appendChild(h("h3", { style:{ margin:"22px 0 10px" } }, "News-app preference and SCMP usability"));
+    POST_GENERAL_QS.forEach(q => wrap.appendChild(renderQuestion(q, a[q.id], v => { state.answers[q.id] = v; render(); })));
+    wrap.appendChild(h("h3", { style:{ margin:"22px 0 10px" } }, "News attitude and perception"));
+    POST_ATTITUDE_QS.forEach(q => wrap.appendChild(renderQuestion(q, a[q.id], v => { state.answers[q.id] = v; render(); })));
+  }
+
+  const visible = diaryVisibleQuestions();
+  const allDone = visible.every(questionComplete);
+  const footer = h("div", { style:{ marginTop:"24px", textAlign:"right" } });
+  footer.appendChild(h("button", {
+    className:"btn btn-primary",
+    disabled:!allDone,
+    onClick:async() => {
+      if (!allDone) return;
+      const answers = collectAnswers(visible);
+      await submitData({ type:"diary", pid:state.pid, day, answers });
+      const completed = state.completedDays[state.pid] || [];
+      if (!completed.includes(day)) completed.push(day);
+      state.completedDays[state.pid] = completed;
+      localStorage.setItem("scmp_days_en_v3", JSON.stringify(state.completedDays));
+      setState({ page:"success-diary" });
+    }
+  }, day === 7 ? "Submit Day 7 diary + post-survey" : "Submit diary"));
+  if (!allDone && a.D1) footer.appendChild(h("p", { className:"sub" }, "Complete all required visible questions before submitting."));
+  wrap.appendChild(footer);
+  return wrap;
+}
+
+function fileToPayload(file) {
+  return new Promise((resolve, reject) => {
+    if (!file) return resolve(null);
+    const maxBytes = 15 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      reject(new Error("The selected file is larger than 15 MB."));
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => resolve({
+      name:file.name,
+      type:file.type || "application/octet-stream",
+      size:file.size,
+      data:reader.result
+    });
+    reader.onerror = () => reject(new Error("Unable to read the selected file."));
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderIssueForm() {
+  const wrap = h("div", { className:"wrap" });
+  wrap.appendChild(h("button", { className:"btn-back", onClick:() => setState({ page:"landing" }) }, "← Back"));
+  wrap.appendChild(h("span", { className:"tag" }, "PART 3"));
+  wrap.appendChild(h("h2", { style:{ marginTop:"10px" } }, "Separate Issue Report"));
+  wrap.appendChild(h("p", { className:"sub", style:{ marginBottom:"20px" } }, "Submit this form whenever you encounter a specific issue. You can submit more than one report during the study."));
+
+  ISSUE_QS.forEach(q => {
+    wrap.appendChild(renderQuestion(q, state.answers[q.id], v => { state.answers[q.id] = v; render(); }));
+  });
+
+  const fileCard = h("div", { className:"q-card" });
+  fileCard.appendChild(h("p", { className:"q-title" },
+    h("span", { className:"q-id" }, "IR6"),
+    "Screenshot / screen recording",
+    h("span", { className:"q-optional" }, "(optional)")
+  ));
+  const fileInput = h("input", { type:"file", accept:"image/*,video/*" });
+  fileInput.addEventListener("change", e => {
+    state.issueFile = e.target.files && e.target.files[0] ? e.target.files[0] : null;
+    render();
+  });
+  fileCard.appendChild(fileInput);
+  fileCard.appendChild(h("div", { className:"file-meta" },
+    state.issueFile ? `${state.issueFile.name} · ${(state.issueFile.size / 1024 / 1024).toFixed(1)} MB` : "Optional. Image or short screen recording. Maximum file size: 15 MB."
+  ));
+  wrap.appendChild(fileCard);
+
+  const allDone = ISSUE_QS.every(questionComplete);
+  const footer = h("div", { style:{ marginTop:"22px", textAlign:"right" } });
+  footer.appendChild(h("button", {
+    className:"btn btn-primary",
+    disabled:!allDone,
+    onClick:async() => {
+      if (!allDone) return;
+      try {
+        const attachment = await fileToPayload(state.issueFile);
+        await submitData({
+          type:"issue",
+          pid:state.pid,
+          answers:collectAnswers(ISSUE_QS),
+          attachment
+        });
+        state.issueFile = null;
+        setState({ page:"success-issue" });
+      } catch (e) {
+        showToast(e.message || "Unable to attach the selected file.");
+      }
+    }
+  }, "Submit issue report"));
+  if (!allDone) footer.appendChild(h("p", { className:"sub" }, "Complete questions IR1–IR5 before submitting."));
+  wrap.appendChild(footer);
+  return wrap;
+}
+
+function renderSuccess(type) {
+  const wrap = h("div", { className:"wrap" });
+  const title = type === "pretest"
+    ? "Pre-test submitted"
+    : type === "issue"
+      ? "Issue report submitted"
+      : "Day " + state.diaryDay + " diary submitted";
+  const detail = type === "pretest"
+    ? "The pre-test is complete."
+    : type === "issue"
+      ? "You can submit another issue report later if a different problem occurs."
+      : state.diaryDay === 7
+        ? "Your Day 7 diary and post-survey are complete."
+        : "Thank you for completing today’s diary.";
+
+  wrap.appendChild(h("div", { className:"success" },
+    h("div", { className:"icon" }, "✓"),
+    h("h2", {}, title),
+    h("p", { className:"sub", style:{ marginTop:"8px" } }, detail),
+    h("button", { className:"btn btn-primary", style:{ marginTop:"28px" }, onClick:() => setState({ page:"landing", answers:{} }) }, "Return to home")
+  ));
+  return wrap;
+}
+
+function renderAdminLogin() {
+  const wrap = h("div", { className:"wrap", style:{ maxWidth:"380px" } });
+  const box = h("div", { className:"card", style:{ textAlign:"center", marginTop:"50px" } });
+  box.appendChild(h("button", { className:"btn-back", onClick:() => setState({ page:"landing" }) }, "← Back"));
+  box.appendChild(h("h2", {}, "Researcher Login"));
+  const pw = h("input", { type:"password", placeholder:"Enter PIN", className:"mono", style:{ textAlign:"center", letterSpacing:"8px", marginTop:"18px" } });
+  pw.addEventListener("keydown", e => { if (e.key === "Enter" && pw.value === ADMIN_PIN) setState({ page:"dashboard", adminAuthed:true }); });
+  box.appendChild(pw);
+  box.appendChild(h("button", {
+    className:"btn btn-primary btn-full", style:{ marginTop:"12px" },
+    onClick:() => pw.value === ADMIN_PIN ? setState({ page:"dashboard", adminAuthed:true }) : showToast("Incorrect PIN")
+  }, "Log in"));
+  wrap.appendChild(box);
+  return wrap;
+}
+
+let chartInstances = {};
+function destroyCharts() {
+  Object.values(chartInstances).forEach(c => c.destroy());
+  chartInstances = {};
+}
+function valOf(r, key) { return r[key] !== undefined ? r[key] : r.answers?.[key]; }
+
+async function renderDashboard() {
+  destroyCharts();
+  const wrap = h("div", { className:"wrap-wide" });
+  wrap.appendChild(h("div", { style:{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"20px" } },
+    h("button", { className:"btn-back", style:{ margin:0 }, onClick:() => setState({ page:"landing" }) }, "← Back"),
+    h("button", { className:"btn btn-ghost", onClick:async() => { state.dashData = await fetchDashboard(); render(); } }, "Refresh")
+  ));
+
+  if (!state.dashData) state.dashData = await fetchDashboard();
+  const d = state.dashData || {};
+  const pretests = d.pretest || [];
+  const diaries = d.diary || [];
+  const issues = d.issue || [];
+  const allPids = [...new Set([...pretests.map(x => x.pid), ...diaries.map(x => x.pid), ...issues.map(x => x.pid)].filter(Boolean))];
+  const zeroDays = diaries.filter(x => valOf(x,"D1") === "No").length;
+  const day7Post = diaries.filter(x => String(x.day) === "7" && valOf(x,"POST2") !== undefined).length;
+
+  wrap.appendChild(h("h2", {}, "Research Dashboard"));
+  wrap.appendChild(h("p", { className:"sub", style:{ marginBottom:"20px" } },
+    `${allPids.length} participants · ${pretests.length} pre-tests · ${diaries.length} diary entries · ${issues.length} issue reports`
+  ));
+
+  const tabs = [
+    ["overview","Overview"],["completion","Completion"],["trends","Daily trends"],
+    ["opentext","Open responses"],["issues","Issue reports"],["references","Question map"],["export","Export"]
+  ];
+  const tabBar = h("div", { className:"tabs" });
+  tabs.forEach(([id,label]) => tabBar.appendChild(h("button", {
+    className:"tab" + (state.dashTab === id ? " active" : ""),
+    onClick:() => { state.dashTab = id; render(); }
+  }, label)));
+  wrap.appendChild(tabBar);
+
+  const content = h("div");
+
+  if (state.dashTab === "overview") {
+    const stats = h("div", { className:"stat-grid" });
+    [
+      ["Participants", allPids.length, "Unique research IDs"],
+      ["Pre-tests", pretests.length, allPids.length ? Math.round(pretests.length / allPids.length * 100) + "% of participants" : "—"],
+      ["Diary entries", diaries.length, allPids.length ? (diaries.length / (allPids.length * 7) * 100).toFixed(0) + "% of expected entries" : "—"],
+      ["Day-7 post-surveys", day7Post, "Included inside Day 7"],
+      ["Zero-use days", zeroDays, diaries.length ? (zeroDays / diaries.length * 100).toFixed(0) + "% of diary entries" : "—"],
+      ["Issue reports", issues.length, "Separate submissions"]
+    ].forEach(([label,v,sub]) => stats.appendChild(h("div", { className:"stat-card" },
+      h("div", { className:"stat-label" }, label),
+      h("div", { className:"stat-val" }, String(v)),
+      h("div", { className:"stat-sub" }, sub)
+    )));
+    content.appendChild(stats);
+
+    if (pretests.length) {
+      const card = h("div", { className:"card" });
+      card.appendChild(h("h3", { style:{ marginBottom:"14px" } }, "Baseline snapshot"));
+      const rows = [
+        ["Age","DEM1"],["Current role","DEM4"],["News frequency","PRE1"],["Main news channel","PRE3"],
+        ["SCMP use","PRE_SCMP1"],["SCMP relationship","PRE_SCMP2"]
+      ];
+      const table = h("table", { className:"matrix" });
+      table.appendChild(h("thead", {}, h("tr", {}, h("th", {}, "ID"), ...rows.map(([l]) => h("th", {}, l)))));
+      const tbody = h("tbody");
+      pretests.forEach(r => {
+        tbody.appendChild(h("tr", {}, h("td", { className:"mono" }, r.pid || "—"), ...rows.map(([,k]) => h("td", {}, String(valOf(r,k) ?? "—")))));
+      });
+      table.appendChild(tbody);
+      card.appendChild(h("div", { style:{ overflowX:"auto" } }, table));
+      content.appendChild(card);
+    }
+  }
+
+  if (state.dashTab === "completion") {
+    const card = h("div", { className:"card", style:{ overflowX:"auto" } });
+    card.appendChild(h("h3", { style:{ marginBottom:"16px" } }, "Seven-day diary completion"));
+    const table = h("table", { className:"matrix" });
+    const hr = h("tr", {}, h("th", {}, "ID"));
+    for (let dd=1; dd<=7; dd++) hr.appendChild(h("th", { className:"center" }, "D" + dd));
+    table.appendChild(h("thead", {}, hr));
+    const tbody = h("tbody");
+    allPids.forEach(pid => {
+      const row = h("tr", {}, h("td", { className:"mono", style:{ fontWeight:"700" } }, pid));
+      for (let dd=1; dd<=7; dd++) {
+        const entry = diaries.find(x => x.pid === pid && String(x.day) === String(dd));
+        let cls="dot-missing", label="—";
+        if (entry && valOf(entry,"D1") === "Yes") { cls="dot-used"; label="✓"; }
+        else if (entry) { cls="dot-notused"; label="○"; }
+        row.appendChild(h("td", { className:"center" }, h("span", { className:"dot " + cls }, label)));
+      }
+      tbody.appendChild(row);
+    });
+    if (!allPids.length) tbody.appendChild(h("tr", {}, h("td", { colspan:"8", style:{ textAlign:"center", color:"var(--muted)", padding:"20px" } }, "No data yet")));
+    table.appendChild(tbody);
+    card.appendChild(table);
+    card.appendChild(h("p", { className:"sub", style:{ marginTop:"12px" } }, "✓ Used SCMP · ○ Did not use SCMP but completed diary · — Missing"));
+    content.appendChild(card);
+  }
+
+  if (state.dashTab === "trends") {
+    const metrics = [
+      ["DU1","SCMP helped me find the news I wanted"],
+      ["DR1","Recommended news matched my interests"],
+      ["DE1","SCMP was easy to use"]
+    ];
+    metrics.forEach(([key,label]) => {
+      const card = h("div", { className:"card" });
+      card.appendChild(h("h3", {}, label));
+      card.appendChild(h("p", { className:"sub", style:{ marginBottom:"12px" } }, "Mean 1–7 score among app-use days"));
+      const holder = h("div", { className:"chart-container" });
+      const canvas = h("canvas");
+      holder.appendChild(canvas); card.appendChild(holder); content.appendChild(card);
+
+      const values = [];
+      for (let dd=1; dd<=7; dd++) {
+        const vals = diaries
+          .filter(x => String(x.day) === String(dd) && valOf(x,"D1") === "Yes")
+          .map(x => parseFloat(valOf(x,key)))
+          .filter(v => !isNaN(v));
+        values.push(vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null);
+      }
+      setTimeout(() => {
+        chartInstances[key] = new Chart(canvas, {
+          type:"line",
+          data:{
+            labels:["Day 1","Day 2","Day 3","Day 4","Day 5","Day 6","Day 7"],
+            datasets:[{ label:"Mean", data:values, borderColor:"#002244", backgroundColor:"rgba(255,178,0,.22)", pointBackgroundColor:"#FFB200", pointBorderColor:"#002244", tension:.28, spanGaps:true }]
+          },
+          options:{
+            responsive:true, maintainAspectRatio:false,
+            scales:{ y:{ min:1, max:7, ticks:{ stepSize:1 } } },
+            plugins:{ legend:{ position:"bottom" } }
+          }
+        });
+      }, 50);
+    });
+  }
+
+  if (state.dashTab === "opentext") {
+    const card = h("div", { className:"card" });
+    card.appendChild(h("h3", { style:{ marginBottom:"16px" } }, "Daily open-ended comments"));
+    const entries = diaries.filter(x => String(valOf(x,"DS2") || "").trim());
+    if (!entries.length) card.appendChild(h("p", { className:"sub" }, "No open-ended diary comments yet."));
+    entries.forEach(x => card.appendChild(h("div", { className:"ot-entry" },
+      h("span", { className:"ot-tag" }, `${x.pid || "—"} D${x.day || "?"}`),
+      String(valOf(x,"DS2"))
+    )));
+    content.appendChild(card);
+  }
+
+  if (state.dashTab === "issues") {
+    const card = h("div", { className:"card", style:{ overflowX:"auto" } });
+    card.appendChild(h("h3", { style:{ marginBottom:"16px" } }, "Separate Issue Reports"));
+    const table = h("table", { className:"matrix" });
+    table.appendChild(h("thead", {}, h("tr", {},
+      h("th", {}, "ID"), h("th", {}, "Type"), h("th", {}, "Impact"), h("th", {}, "Frequency"), h("th", {}, "Description"), h("th", {}, "Attachment")
+    )));
+    const tbody = h("tbody");
+    issues.forEach(x => {
+      const att = x.attachment?.name || x.answers?.attachment?.name || "";
+      tbody.appendChild(h("tr", {},
+        h("td", { className:"mono" }, x.pid || "—"),
+        h("td", {}, String(valOf(x,"IR1") ?? "—")),
+        h("td", {}, String(valOf(x,"IR4") ?? "—")),
+        h("td", {}, String(valOf(x,"IR5") ?? "—")),
+        h("td", {}, String(valOf(x,"IR2") ?? "—")),
+        h("td", {}, att || "—")
+      ));
+    });
+    if (!issues.length) tbody.appendChild(h("tr", {}, h("td", { colspan:"6", style:{ textAlign:"center", color:"var(--muted)", padding:"20px" } }, "No issue reports yet")));
+    table.appendChild(tbody); card.appendChild(table); content.appendChild(card);
+  }
+
+  if (state.dashTab === "references") {
+    const card = h("div", { className:"card", style:{ overflowX:"auto" } });
+    card.appendChild(h("h3", { style:{ marginBottom:"8px" } }, "Question map"));
+    card.appendChild(h("p", { className:"sub", style:{ marginBottom:"16px" } }, "Participant-facing questions are organized into the three requested parts."));
+    const table = h("table", { className:"matrix" });
+    table.appendChild(h("thead", {}, h("tr", {}, h("th", {}, "Item"), h("th", {}, "Question"), h("th", {}, "Part"))));
+    const tbody = h("tbody");
+    PRETEST_QS.concat(DAILY_BASIC_QS, DAILY_PRODUCT_QS, DAILY_REFLECTION_QS, POSTTEST_QS, ISSUE_QS).forEach(q => {
+      tbody.appendChild(h("tr", {},
+        h("td", { className:"mono" }, q.id),
+        h("td", {}, q.text),
+        h("td", {}, QUESTION_REFERENCES[q.id] || "Survey draft")
+      ));
+    });
+    table.appendChild(tbody); card.appendChild(table); content.appendChild(card);
+  }
+
+  if (state.dashTab === "export") {
+    const card = h("div", { className:"card" });
+    card.appendChild(h("h3", { style:{ marginBottom:"10px" } }, "Data Export"));
+    card.appendChild(h("p", { className:"sub", style:{ marginBottom:"18px" } }, "CSV files use UTF-8 with BOM encoding. Day-7 post-survey fields are included in the diary export."));
+    const row = h("div", { style:{ display:"flex", gap:"10px", flexWrap:"wrap" } });
+    row.appendChild(h("button", { className:"btn btn-primary", onClick:() => exportCSV("pretest", pretests) }, `Export pre-tests (${pretests.length})`));
+    row.appendChild(h("button", { className:"btn btn-secondary", onClick:() => exportCSV("diary", diaries) }, `Export diaries (${diaries.length})`));
+    row.appendChild(h("button", { className:"btn btn-secondary", onClick:() => exportCSV("issue", issues) }, `Export issues (${issues.length})`));
+    row.appendChild(h("button", { className:"btn btn-secondary", onClick:() => {
+      const blob = new Blob([JSON.stringify(state.localLog, null, 2)], { type:"application/json" });
+      const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "scmp_local_backup.json"; a.click();
+    } }, "Export local backup"));
+    card.appendChild(row); content.appendChild(card);
+  }
+
+  wrap.appendChild(content);
+  return wrap;
+}
+
+function csvEscape(v) {
+  if (Array.isArray(v)) v = v.join("; ");
+  if (v === undefined || v === null) v = "";
+  return '"' + String(v).replace(/"/g,'""') + '"';
+}
+function exportCSV(type, data) {
+  let headers = ["timestamp","pid"];
+  if (type === "pretest") {
+    PRETEST_QS.forEach(q => { headers.push(q.id); if (q.otherId) headers.push(q.otherId); });
+  } else if (type === "diary") {
+    headers.push("day");
+    DAILY_BASIC_QS.concat(DAILY_PRODUCT_QS, DAILY_REFLECTION_QS, POSTTEST_QS).forEach(q => {
+      headers.push(q.id); if (q.otherId) headers.push(q.otherId);
+    });
+  } else {
+    ISSUE_QS.forEach(q => { headers.push(q.id); if (q.otherId) headers.push(q.otherId); });
+    headers.push("attachment_name","attachment_type","attachment_size");
+  }
+  headers = [...new Set(headers)];
+
+  let csv = "\uFEFF" + headers.join(",") + "\n";
+  data.forEach(r => {
+    const row = headers.map(k => {
+      if (k === "timestamp") return csvEscape(r.timestamp || r._localTime || "");
+      if (k === "attachment_name") return csvEscape(r.attachment?.name || "");
+      if (k === "attachment_type") return csvEscape(r.attachment?.type || "");
+      if (k === "attachment_size") return csvEscape(r.attachment?.size || "");
+      return csvEscape(valOf(r,k));
+    });
+    csv += row.join(",") + "\n";
+  });
+  const blob = new Blob([csv], { type:"text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `scmp_${type}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+function render() {
+  const app = document.getElementById("app");
+  app.innerHTML = "";
+  let page;
+  switch (state.page) {
+    case "landing": page = renderLanding(); break;
+    case "pretest": page = renderPretestIntro(); break;
+    case "pretest-form": page = renderPretestForm(); break;
+    case "diary-pick": page = renderDiaryPick(); break;
+    case "diary-form": page = renderDiaryForm(); break;
+    case "issue-form": page = renderIssueForm(); break;
+    case "success-pretest": page = renderSuccess("pretest"); break;
+    case "success-diary": page = renderSuccess("diary"); break;
+    case "success-issue": page = renderSuccess("issue"); break;
+    case "admin-login": page = renderAdminLogin(); break;
+    case "dashboard":
+      app.appendChild(h("div", { style:{ textAlign:"center", padding:"70px", color:"var(--muted)" } }, "Loading dashboard..."));
+      renderDashboard().then(p => { app.innerHTML = ""; app.appendChild(p); });
+      return;
+    default: page = renderLanding();
+  }
+  app.appendChild(page);
+
+  const existing = document.querySelector(".toast");
+  if (existing) existing.remove();
+  if (state.toast) document.body.appendChild(h("div", { className:"toast" }, state.toast));
+}
+
+render();
+</script>
+</body>
+</html>
