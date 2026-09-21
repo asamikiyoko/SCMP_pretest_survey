@@ -171,6 +171,7 @@ textarea {
 .day-btn:hover { border-color: var(--blue); }
 .day-btn.day7 { border-color: var(--yellow); box-shadow: inset 0 -4px 0 var(--yellow); }
 .day-btn.done { background: var(--blue); color: #fff; border-color: var(--blue); }
+.day-btn.locked { opacity: 0.4; cursor: not-allowed; }
 .day-btn .done-label { font-size: 10px; margin-top: 3px; opacity: .8; font-weight: 550; }
 
 .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: 12px; margin-bottom: 24px; }
@@ -234,7 +235,7 @@ textarea {
 
 <script>
 // Google Apps Script Web App endpoint
-const API_URL = "https://script.google.com/macros/s/AKfycbw-8b66id2KbcdNTG33tjII9Vs26CU7H4CBIwTnrezoTQbJnh2BvB5QswPd2XnV4Q-FzQ/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwI3huvaQchcFujJsev8WMkKOQt3tqpgx_YL8mPAOP0Wbxtt8hjxYRSKDS63mWE4J9RMw/exec";
 const ADMIN_PIN = "2026";
 
 const AGE_OPTS = ["Under 18","18–24","25–34","35–44","45–54","55–64","65 or older","Prefer not to answer"];
@@ -443,12 +444,28 @@ async function submitData(payload, options = {}) {
     return true;
   }
   try {
-    await fetch(API_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "text/plain" },
-      body: JSON.stringify(payload)
-    });
+    // Use hidden form + iframe to bypass CORS and redirect issues
+    let iframe = document.getElementById("_submit_frame");
+    if (!iframe) {
+      iframe = document.createElement("iframe");
+      iframe.name = "_submit_frame";
+      iframe.id = "_submit_frame";
+      iframe.style.display = "none";
+      document.body.appendChild(iframe);
+    }
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = API_URL;
+    form.target = "_submit_frame";
+    form.style.display = "none";
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = "payload";
+    input.value = JSON.stringify(payload);
+    form.appendChild(input);
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
     return true;
   } catch (e) {
     showToast("Network error. A local backup has been kept.");
@@ -754,12 +771,18 @@ function renderDiaryPick() {
   const grid = h("div", { className:"day-grid" });
   for (let d = 1; d <= 7; d++) {
     const isDone = done.includes(d);
+    // Day 1 always unlocked; others need previous day completed
+    const isLocked = d > 1 && !done.includes(d - 1);
     const btn = h("button", {
-      className:"day-btn" + (d === 7 ? " day7" : "") + (isDone ? " done" : ""),
-      onClick:() => { state.answers = {}; setState({ page:"diary-form", diaryDay:d }); }
+      className:"day-btn" + (d === 7 ? " day7" : "") + (isDone ? " done" : "") + (isLocked ? " locked" : ""),
+      onClick:() => {
+        if (isLocked) return;
+        state.answers = {}; setState({ page:"diary-form", diaryDay:d });
+      }
     }, "Day " + d);
-    if (d === 7 && !isDone) btn.appendChild(h("div", { className:"done-label" }, "+ post-survey"));
+    if (d === 7 && !isDone && !isLocked) btn.appendChild(h("div", { className:"done-label" }, "+ post-survey"));
     if (isDone) btn.appendChild(h("div", { className:"done-label" }, "Completed"));
+    if (isLocked) btn.appendChild(h("div", { className:"done-label" }, "🔒 Complete Day " + (d - 1) + " first"));
     grid.appendChild(btn);
   }
   wrap.appendChild(grid);
