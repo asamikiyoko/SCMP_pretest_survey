@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>SCMP Pilot Study Survey</title>
+<title>SCMP Pilot Study</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <style>
 :root {
@@ -192,129 +192,64 @@ textarea {
 <div id="app"></div>
 
 <script>
-// Google Apps Script Web App endpoint
-const API_URL = "https://script.google.com/macros/s/AKfycbzhUG_d6_DQae6rtEKfpOENPLSuffHMdC5c0hK1dPQu3PeeTXeYvWXkBwrXwCktNoc/exec";
+// ╔══════════════════════════════════════════════════════════╗
+// ║  ⚙️  在这里粘贴你的 Google Apps Script Web App URL      ║
+// ╚══════════════════════════════════════════════════════════╝
+const API_URL = "https://script.google.com/macros/s/AKfycbzhUG_d6_DQae6rtEKfpOENPLSuffHMdC5c0hK1dPQu3PeeTXeYvWXkBwrXwCktNoc/exec";  // ← 粘贴你的 URL，例如 "https://script.google.com/macros/s/xxxxx/exec"
 const ADMIN_PIN = "2026";
 
 // ── Question Definitions ──
-const NO_NEWS = "I did not get any news during the past seven days";
-const PRETEST_HABIT_QS = [
-  { id:"P1", text:"During the past seven days, on how many days did you access news on a smartphone?", type:"single", opts:["0 days","1 day","2 days","3 days","4 days","5 days","6 days","7 days"] },
-  { id:"P2", text:"During the past seven days, which channel did you use most often to get news?", type:"single", opts:["News organisation app or website, including SCMP","Printed newspaper or magazine","Television","Radio","Social media","Search engine","News aggregator","Email newsletter","Podcast","AI tool","Friends or family","Other (please specify)",NO_NEWS] },
-  { id:"P2_other", text:"Please specify the other news channel.", type:"text", showIf:"P2=Other (please specify)", ph:"Enter the channel" },
-  { id:"P3", text:"How often do you currently use SCMP?", type:"single", opts:["Never","Used it previously but not now","Less than one day per week","1-3 days per week","4-7 days per week"] },
-  { id:"P4", text:"Which of the following best describes your current SCMP registration or subscription status?", type:"single", opts:["Paid subscriber","Registered user without a paid subscription","Not registered","Previously subscribed but not currently","Not sure"] },
-  { id:"P5", text:"Which news topics are you usually most interested in? (Select up to three)", type:"multi", max:3, opts:["Hong Kong","China","World","Business and finance","Technology","Culture and lifestyle","Sport","Other"] },
-  { id:"P6", text:"What are your main reasons for getting news? (Select up to two)", type:"multi", max:2, opts:["Get a quick overview of major events","Follow a specific event or issue","Find news relevant to me","Discover important issues I would not otherwise encounter","Verify information","Other"] },
-  { id:"P7", text:"How easy is it for you to get the news you want through this channel?", type:"likert7", showIf:"P2_has_news", leftLabel:"Very difficult", rightLabel:"Very easy" },
-  { id:"P8", text:"This channel exposes me to important issues that I would not otherwise look for.", type:"likert7", showIf:"P2_has_news" },
-  { id:"P9", text:"I trust the news I get through this channel.", type:"likert7", showIf:"P2_has_news" },
-  { id:"P10", text:"How familiar are you with AI-personalised recommendations or AI-generated news features?", type:"likert5", leftLabel:"Not at all familiar", rightLabel:"Extremely familiar" },
-  { id:"P11", text:"How much do you trust AI-assisted news recommendations?", type:"likert5", leftLabel:"Not at all", rightLabel:"Completely" },
+const PRETEST_QS = [
+  { id:"P1", text:"過去 7 天，你有幾天在手機上看新聞？", type:"single", opts:["0天","1天","2天","3天","4天","5天","6天","7天"] },
+  { id:"P2", text:"你通常首先從哪裡找到新聞？", type:"single", opts:["SCMP","其他新聞機構 app 或網站","社交媒體","搜尋","新聞聚合器","AI 工具","其他"] },
+  { id:"P3", text:"你目前多久使用一次 SCMP？", type:"single", opts:["從未","以前用過但現在沒有","少於每週 1 天","每週 1-3 天","每週 4-7 天"] },
+  { id:"P4", text:"你目前的 SCMP 身分是？", type:"single", opts:["付費訂閱","免費註冊","未註冊","曾訂閱但目前沒有","不確定"] },
+  { id:"P5", text:"你通常最關注哪些新聞主題？（最多選 3 項）", type:"multi", max:3, opts:["香港","中國","國際","商業及金融","科技","文化與生活","體育","其他"] },
+  { id:"P6", text:"你打開新聞 app 最常想完成甚麼？（最多選 2 項）", type:"multi", max:2, opts:["快速了解大事","追蹤特定事件","尋找與自己相關的新聞","看看意料之外的重要議題","核實資訊","其他"] },
+  { id:"P7", text:"回想過去 7 天你最常用的手機新聞來源：它讓你容易找到想看的新聞。", type:"likert7", na:true },
+  { id:"P8", text:"同一新聞來源：它讓你接觸到重要但原本不會主動搜尋的議題。", type:"likert7", na:true },
+  { id:"P9", text:"同一新聞來源：我信任它呈現的新聞。", type:"likert7", na:true },
+  { id:"P10", text:"你對 AI 個人化推薦或 AI 生成的新聞功能有多熟悉？", type:"likert5", leftLabel:"完全不熟悉", rightLabel:"非常熟悉" },
+  { id:"P11", text:"你有多信任 AI 輔助的新聞推薦？", type:"likert5", leftLabel:"完全不信任", rightLabel:"完全信任" },
 ];
-
-const NEWS_LITERACY_KNOWLEDGE_QS = [
-  { id:"NLK1", text:"Social media companies can make money by collecting user data and serving targeted advertising.", type:"single", opts:["True","False","Don't know"] },
-  { id:"NLK2", text:"Before news appears on a social media platform, all of it is verified by employees of that platform.", type:"single", opts:["True","False","Don't know"] },
-  { id:"NLK3", text:"If a news story receives many likes, shares, or comments on social media, its content is credible.", type:"single", opts:["True","False","Don't know"] },
-  { id:"NLK4", text:"The most prominent story on a news website is always the most important story of the day.", type:"single", opts:["True","False","Don't know"] },
-  { id:"NLK5", text:"The same news story may influence different people to different degrees.", type:"single", opts:["True","False","Don't know"] },
-];
-
-const NEWS_LITERACY_BEHAVIOUR_QS = [
-  { id:"NLB1", text:"When I was unsure about a claim in a news story, I checked whether another independent source reported the same information.", type:"likert5", leftLabel:"Never", rightLabel:"Every time or almost every time", na:true, naText:"Not applicable" },
-  { id:"NLB2", text:"I checked which organisation or author originally published a news story.", type:"likert5", leftLabel:"Never", rightLabel:"Every time or almost every time", na:true, naText:"Not applicable" },
-  { id:"NLB3", text:"I paid attention to whether content was a news report, opinion, or advertisement.", type:"likert5", leftLabel:"Never", rightLabel:"Every time or almost every time", na:true, naText:"Not applicable" },
-  { id:"NLB4", text:"When I encountered news through social media, a search engine, a news aggregator, or an AI tool, I opened the original news source before judging it.", type:"likert5", leftLabel:"Never", rightLabel:"Every time or almost every time", na:true, naText:"Not applicable" },
-];
-
-const PRETEST_QS = [...PRETEST_HABIT_QS, ...NEWS_LITERACY_KNOWLEDGE_QS, ...NEWS_LITERACY_BEHAVIOUR_QS];
-const NEWS_LITERACY_KEY = { NLK1:"True", NLK2:"False", NLK3:"False", NLK4:"False", NLK5:"True" };
-
-// Research references are intentionally shown only in the researcher dashboard.
-const QUESTION_REFERENCES = {
-  P1:'[R1] p. 5, "News frequency"; direct',
-  P2:'[R1] p. 5, "Primary news route"; pilot-expanded beyond smartphone and digital channels',
-  P2_other:'Pilot follow-up to P2',
-  P3:'[R1] p. 5, "SCMP relationship"; direct',
-  P4:'[R1] pp. 8 and 13, subscription routing and recruitment status; pilot-added classification item',
-  P5:'[R1] p. 6, "Section interests"; adapted to a maximum of three',
-  P6:'[R1] pp. 2 and 11, task fit and main news goal; pilot-expanded; [TTF]',
-  P7:'[R1] pp. 6 and 11, ease and news-finding task; pilot-added cross-channel baseline; [TTF]',
-  P8:'[R1] pp. 7-8, unexpected usefulness and discovery; adapted cross-channel baseline',
-  P9:'[R1] pp. 2 and 8, credibility and responsible presentation; [VSD]',
-  P10:'[R1] p. 6, AI familiarity; direct',
-  P11:'[R1] p. 6, baseline AI trust; direct',
-  NLK1:'[NLK15] Appendix A, Item 2; context domain',
-  NLK2:'[NLK15] Appendix A, Item 9; creation domain',
-  NLK3:'[NLK15] Appendix A, Item 5; content domain',
-  NLK4:'[NLK15] Appendix A, Item 10; circulation domain',
-  NLK5:'[NLK15] Appendix A, Item 13; consumption domain',
-  NLB1:'[NLB] pp. 7-8 and 14-15; [COR]; pilot behaviour item',
-  NLB2:'[NL5C], creation/content; [NLB] pp. 5-6; pilot behaviour item',
-  NLB3:'[NLB] pp. 5-6 and 14-15; pilot behaviour item',
-  NLB4:'[NL5C], circulation/consumption; [NLB] pp. 6-8; [COR]; pilot behaviour item',
-  D1:'[R1] p. 11, use/no use and zero-use days; adapted',
-  D2:'[R1] p. 11, zero-use days; pilot-added options',
-  D3:'[R1] pp. 11-12, replacement and primary route; pilot-added routing item',
-  D4:'[R1] p. 11, main news goal; adapted; [TTF]',
-  D5:'[R1] pp. 7 and 11, useful stories and daily goal; pilot-added recall categories',
-  D6:'[R1] pp. 9 and 12, time to first useful item; pilot-added self-report bands',
-  D7:'[R1] p. 11, whether the goal was met; adapted; [TTF]',
-  D8a:'[R1] pp. 7 and 11, immediate relevance and goal fit; [TTF]',
-  D8b:'[R1] pp. 6 and 11, ease and effort; adapted',
-  D8c:'[R1] pp. 8 and 11, credibility and daily trust; [VSD]',
-  D8d:'[R1] pp. 8 and 11, benefit/sacrifice and value; [VAM]',
-  D8e:'[R1] pp. 4 and 11-12, expectation alignment; adapted',
-  D9:'[R1] p. 11, most useful item; adapted',
-  D10:'[R1] pp. 10-11, friction, trust, repetition, and failure review; [VSD]',
-  D11:'[R1] pp. 8 and 11-12, replacement of another source; [VAM]',
-  D11_source:'Follow-up to D11',
-  N1:'[R1] pp. 11-12, tab role; pilot-added self-report',
-  N2:'[R1] pp. 3 and 11, feedback mechanisms and events; pilot-added event check',
-  N3:'[R1] p. 7 and pp. 9-10, adaptation; adapted',
-  N4:'[R1] pp. 10-12, guide views and use; pilot-added event check',
-  N5:'[R1] p. 7, Module D Item 1; direct with Cannot judge option',
-  N6:'[R1] pp. 7 and 10, editorial responsibility and AI role; adapted comprehension check'
-};
 
 const DIARY_A = [
-  { id:"D1", text:"Did you open the SCMP app assigned for this study today?", type:"single", opts:["Yes","No"] },
-  { id:"D2", text:"What was the main reason you did not use the assigned app today?", type:"single", showIf:"D1=No", opts:["No need to check news","Too busy","Used another source","Forgot or did not think of it","Could not find content I wanted","Technical or login problem","Other"] },
-  { id:"D3", text:"Did you get news from another source today? Which type was your main source?", type:"single", showIf:"D1=No", opts:["No","Another news organisation","Social media","Search","News aggregator","AI tool","Other"] },
+  { id:"D1", text:"今天你有打開研究指定的 SCMP app 嗎？", type:"single", opts:["有","沒有"] },
+  { id:"D2", text:"今天沒有使用指定 app，最主要原因是甚麼？", type:"single", showIf:"D1=沒有", opts:["沒有看新聞需要","太忙","使用了其他來源","忘記或沒有想起它","找不到想看的內容","技術或登入問題","其他"] },
+  { id:"D3", text:"今天你有透過其他來源看新聞嗎？最主要是哪一類？", type:"single", showIf:"D1=沒有", opts:["沒有","其他新聞機構","社交媒體","搜尋","聚合器","AI 工具","其他"] },
 ];
 
 const DIARY_B = [
-  { id:"D4", text:"When you first opened the app today, what did you mainly want to do?", type:"single", opts:["Get a quick overview","Follow a specific event","Find news relevant to me","Discover an important issue I would not otherwise see","Browse without a specific goal","Other"] },
-  { id:"D5", text:"During your first use today, did you find any stories that were useful for your goal at that time?", type:"single", opts:["Yes, one","Yes, 2-3","Yes, four or more","No"] },
-  { id:"D6", text:"About how long did it take from opening the app to finding the first useful story?", type:"single", opts:["Less than 1 minute","1-3 minutes","More than 3 minutes","I left without finding one"] },
-  { id:"D7", text:"To what extent did you accomplish what you wanted to do?", type:"single", opts:["Completely","Partly","Not at all","I did not have a specific goal"] },
-  { id:"D8a", text:"The app helped me find news that matched what I needed at the time.", type:"likert7", na:true, naText:"Not applicable" },
-  { id:"D8b", text:"It was easy to find news in the app today.", type:"likert7" },
-  { id:"D8c", text:"I trust the news I saw in the app today.", type:"likert7", na:true, naText:"Cannot judge" },
-  { id:"D8d", text:"Using the app today was worth the time and effort.", type:"likert7" },
-  { id:"D8e", text:"The app behaved as I expected it to today.", type:"likert7", na:true, naText:"I had no prior expectation" },
-  { id:"D9", text:"What was the most useful story you found today, and why was it useful?", type:"text", ph:"Enter None if applicable" },
-  { id:"D10", text:"Was anything confusing, repetitive, or untrustworthy today? What happened?", type:"text", ph:"Enter None if applicable" },
-  { id:"D11", text:"Did using this app mean that you spent less time with another news source today?", type:"single", opts:["Yes","No","Not sure"] },
-  { id:"D11_source", text:"Which source did you spend less time with?", type:"text", showIf:"D11=Yes", ph:"Optional" },
+  { id:"D4", text:"今天第一次打開它時，你主要想做甚麼？", type:"single", opts:["快速了解大事","追蹤特定事件","尋找與自己相關的新聞","發現原本不會看的重要議題","隨意瀏覽","其他"] },
+  { id:"D5", text:"今天第一次使用時，你有找到對當時目的有用的文章嗎？", type:"single", opts:["有，1 篇","有，2-3 篇","有，4 篇或以上","沒有"] },
+  { id:"D6", text:"從打開 app 到找到第一篇有用的文章，大約花了多久？", type:"single", opts:["少於 1 分鐘","1-3 分鐘","超過 3 分鐘","直到離開都沒有"] },
+  { id:"D7", text:"今天你原本想做的事完成了多少？", type:"single", opts:["完全完成","部分完成","沒有完成","沒有特定目的"] },
+  { id:"D8a", text:"今天這個 app 幫我找到符合當時需要的新聞。", type:"likert7", na:true, naText:"不適用" },
+  { id:"D8b", text:"今天用它找新聞很容易。", type:"likert7" },
+  { id:"D8c", text:"我信任今天在這個 app 看到的新聞。", type:"likert7", na:true, naText:"無法判斷" },
+  { id:"D8d", text:"今天使用它值得我花的時間與心力。", type:"likert7" },
+  { id:"D8e", text:"這個 app 今天的表現符合我使用前的預期。", type:"likert7", na:true, naText:"沒有預期" },
+  { id:"D9", text:"今天最有用的一篇新聞是甚麼？為甚麼？", type:"text", ph:"沒有則填「沒有」" },
+  { id:"D10", text:"今天有沒有令你感到困惑、內容重複或不信任的地方？發生了甚麼？", type:"text", ph:"沒有則填「沒有」" },
+  { id:"D11", text:"今天你有沒有因為這個 app，而少用另一個新聞來源？", type:"single", opts:["有","沒有","不確定"] },
+  { id:"D11_source", text:"主要是哪個來源？", type:"text", showIf:"D11=有", ph:"選填" },
 ];
 
 const DIARY_C = [
-  { id:"N1", text:"Which parts of the app did you use today?", type:"single", opts:["Discover","Editors' Pick","Both","Cannot remember"] },
-  { id:"N2", text:"If you used Discover, did you select Interested, Not for me, or Maybe, or refresh the recommendations?", type:"single", showIf:"N1_discover", opts:["Gave explicit feedback","Refreshed only","Both","Neither"] },
-  { id:"N3", text:"If you saw another set of stories after giving feedback or refreshing, did it change in the direction you expected?", type:"likert7", showIf:"N2_feedback", na:true, naText:"I did not see another set" },
-  { id:"N4", text:"If you used Editors' Pick, did you read the AI-generated guide?", type:"single", showIf:"N1_ep", opts:["Yes","No","I did not see a guide"] },
-  { id:"N5", text:"If you read the guide, did it accurately summarise the main themes in the day's selection?", type:"likert7", showIf:"N4_read", na:true, naText:"Cannot judge" },
-  { id:"N6", text:"Who do you think selected the stories in Editors' Pick today?", type:"single", showIf:"N1_ep", opts:["Editors","AI system","Editors and AI jointly","Not sure"] },
+  { id:"N1", text:"今天你用了哪些部分？", type:"single", opts:["Discover","Editors' Pick","兩者","記不起來"] },
+  { id:"N2", text:"今天你有沒有按 Interested、Not for me、Maybe，或刷新推薦？", type:"single", showIf:"N1_discover", opts:["有明確回饋","只有刷新","兩者都有","都沒有"] },
+  { id:"N3", text:"回饋或刷新之後的下一批文章：它有按你預期的方向改變嗎？", type:"likert7", showIf:"N2_feedback", na:true, naText:"未看到下一批" },
+  { id:"N4", text:"今天你有讀 AI 導讀嗎？", type:"single", showIf:"N1_ep", opts:["有","沒有","沒有看到導讀"] },
+  { id:"N5", text:"導讀有準確概述當日選文的主要主題嗎？", type:"likert7", showIf:"N4_read", na:true, naText:"無法判斷" },
+  { id:"N6", text:"你認為今天 Editors' Pick 的文章由誰挑選？", type:"single", showIf:"N1_ep", opts:["編輯","AI 系統","兩者共同挑選","不確定"] },
 ];
 
 // ── State ──
 let state = {
   page: "landing", pid: "", group: "", diaryDay: null, answers: {},
   toast: "", dashData: null, dashTab: "overview", adminAuthed: false,
-  localLog: JSON.parse(localStorage.getItem("scmp_log_en_v2") || "[]"),
-  completedDays: JSON.parse(localStorage.getItem("scmp_days_en_v2") || "{}"),
+  localLog: JSON.parse(localStorage.getItem("scmp_log") || "[]"),
+  completedDays: JSON.parse(localStorage.getItem("scmp_days") || "{}"),
 };
 
 function setState(patch) {
@@ -326,10 +261,10 @@ function setState(patch) {
 async function submitData(payload) {
   // Always save locally as backup
   state.localLog.push({ ...payload, _localTime: new Date().toISOString() });
-  localStorage.setItem("scmp_log_en_v2", JSON.stringify(state.localLog));
+  localStorage.setItem("scmp_log", JSON.stringify(state.localLog));
 
   if (!API_URL) {
-    showToast("API URL is not configured. Data has been saved locally.");
+    showToast("⚠️ 尚未設定 API URL，數據已保存在本地");
     return true;
   }
   try {
@@ -340,7 +275,7 @@ async function submitData(payload) {
     });
     return true;
   } catch (e) {
-    showToast("Network error. Data has been saved locally.");
+    showToast("⚠️ 網路錯誤，數據已保存在本地");
     return true; // still saved locally
   }
 }
@@ -358,7 +293,7 @@ async function fetchDashboard() {
     const r = await fetch(API_URL + "?action=all");
     return await r.json();
   } catch {
-    showToast("Unable to load data.");
+    showToast("無法載入數據");
     return { pretest: [], diary: [], participants: [] };
   }
 }
@@ -433,8 +368,8 @@ function renderLikert(value, onChange, max, leftLabel, rightLabel, naOpt, naText
   }
   wrap.appendChild(row);
 
-  const defLeft = max === 7 ? "Strongly disagree" : "1";
-  const defRight = max === 7 ? "Strongly agree" : String(max);
+  const defLeft = max === 7 ? "非常不同意" : "1";
+  const defRight = max === 7 ? "非常同意" : String(max);
   const labels = h("div", { className: "likert-labels" },
     h("span", {}, leftLabel || defLeft),
     h("span", {}, rightLabel || defRight)
@@ -445,7 +380,7 @@ function renderLikert(value, onChange, max, leftLabel, rightLabel, naOpt, naText
     const na = h("button", {
       className: "na-btn" + (value === "N/A" ? " selected" : ""),
       onClick: () => onChange("N/A")
-    }, naText || "Not applicable");
+    }, naText || "不適用");
     wrap.appendChild(na);
   }
   return wrap;
@@ -478,27 +413,27 @@ function renderLanding() {
   // Header
   const header = h("div", { style: { textAlign: "center", marginBottom: "40px", marginTop: "20px" } },
     h("div", { className: "tag" }, "SCMP PILOT STUDY"),
-    h("h1", { style: { marginTop: "8px" } }, "Study Survey"),
-    h("p", { className: "sub", style: { marginTop: "8px" } }, "Enter your research ID and select the survey you need to complete.")
+    h("h1", { style: { marginTop: "8px" } }, "問卷系統"),
+    h("p", { className: "sub", style: { marginTop: "8px" } }, "請輸入你的研究編號，選擇要填寫的問卷。")
   );
   wrap.appendChild(header);
 
   const card = h("div", { className: "card" });
 
   // PID
-  card.appendChild(h("label", { className: "label" }, "Research ID"));
-  const pidInput = h("input", { type: "text", placeholder: "For example: S01", className: "mono", style: { letterSpacing: "2px", marginBottom: "18px" } });
+  card.appendChild(h("label", { className: "label" }, "研究編號"));
+  const pidInput = h("input", { type: "text", placeholder: "例如：S01", className: "mono", style: { letterSpacing: "2px", marginBottom: "18px" } });
   pidInput.value = state.pid;
   pidInput.addEventListener("input", e => { state.pid = e.target.value.toUpperCase(); render(); });
   card.appendChild(pidInput);
 
   // Group
-  card.appendChild(h("label", { className: "label", style: { marginTop: "10px" } }, "Assigned group"));
-  card.appendChild(renderRadio(["Control (current version)", "Experimental (new version)"], state._groupLabel || "", v => { state._groupLabel = v; state.group = v.includes("new version") ? "experimental" : "control"; render(); }));
+  card.appendChild(h("label", { className: "label", style: { marginTop: "10px" } }, "你的組別"));
+  card.appendChild(renderRadio(["對照組（現有版）", "實驗組（新版）"], state._groupLabel || "", v => { state._groupLabel = v; state.group = v.includes("新版") ? "experimental" : "control"; render(); }));
 
   // Action
-  card.appendChild(h("label", { className: "label", style: { marginTop: "18px" } }, "Select a survey"));
-  card.appendChild(renderRadio(["Pre-survey", "Evening diary (Days 1-7)"], state._action || "", v => { state._action = v; render(); }));
+  card.appendChild(h("label", { className: "label", style: { marginTop: "18px" } }, "選擇問卷"));
+  card.appendChild(renderRadio(["前測問卷", "每日日誌（Day 1-7）"], state._action || "", v => { state._action = v; render(); }));
 
   // Submit
   const canGo = state.pid && state.group && state._action;
@@ -509,10 +444,10 @@ function renderLanding() {
     onClick: () => {
       if (!canGo) return;
       state.answers = {};
-      if (state._action === "Pre-survey") setState({ page: "pretest" });
+      if (state._action === "前測問卷") setState({ page: "pretest" });
       else setState({ page: "diary-pick" });
     }
-  }, "Continue");
+  }, "開始填寫");
   if (!canGo) goBtn.disabled = true;
   card.appendChild(goBtn);
 
@@ -523,7 +458,7 @@ function renderLanding() {
     h("button", {
       style: { background: "none", border: "none", color: "var(--muted)", fontSize: "13px", cursor: "pointer", textDecoration: "underline", opacity: ".6" },
       onClick: () => setState({ page: "admin-login" })
-    }, "Researcher login")
+    }, "研究員登入")
   );
   wrap.appendChild(admin);
 
@@ -532,17 +467,17 @@ function renderLanding() {
 
 function renderConsent() {
   const wrap = h("div", { className: "wrap" });
-  wrap.appendChild(h("button", { className: "btn-back", onClick: () => setState({ page: "landing" }) }, "← Back"));
+  wrap.appendChild(h("button", { className: "btn-back", onClick: () => setState({ page: "landing" }) }, "← 返回"));
 
   const card = h("div", { className: "card" });
-  card.appendChild(h("h2", {}, "Before You Begin"));
+  card.appendChild(h("h2", {}, "研究說明"));
   card.appendChild(h("p", { style: { fontSize: "14px", lineHeight: "1.7", color: "var(--muted)", marginTop: "16px" } },
-    "Welcome, and thank you for taking part in this study. Before you begin using the app assigned for this research, please complete this short survey. We would like to understand your usual news consumption habits and how you generally understand and handle news information. This survey is not an evaluation of your experience with the app. The first section asks about your everyday experience and has no right or wrong answers. The second section includes several news knowledge questions. If you are unsure, please select ‘Don't know’ rather than searching for an answer. Your responses will be recorded under a research ID. Please refer to the separate consent form for details about how your data will be used and retained."
+    "我們想了解你平常如何在手機上看新聞。請依照實際情況作答，沒有標準答案。研究期間可能記錄指定 app 內的使用事件；你可不使用 app，並可隨時退出。資料以研究編號處理。實際記錄項目、資料收集與保留細節以另行提供的同意書為準。"
   ));
   card.appendChild(h("button", {
     className: "btn btn-primary btn-full", style: { marginTop: "24px" },
     onClick: () => setState({ page: "pretest-form" })
-  }, "I understand — begin survey"));
+  }, "我已了解，開始填寫"));
   wrap.appendChild(card);
   return wrap;
 }
@@ -551,39 +486,18 @@ function renderPretestForm() {
   const wrap = h("div", { className: "wrap" });
 
   const topBar = h("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" } },
-    h("button", { className: "btn-back", style: { margin: 0 }, onClick: () => setState({ page: "landing" }) }, "← Back"),
-    h("span", { className: "mono", style: { fontSize: "12px", color: "var(--muted)" } }, state.pid + " · Pre-survey")
+    h("button", { className: "btn-back", style: { margin: 0 }, onClick: () => setState({ page: "landing" }) }, "← 返回"),
+    h("span", { className: "mono", style: { fontSize: "12px", color: "var(--muted)" } }, state.pid + " · 前測問卷")
   );
   wrap.appendChild(topBar);
-  wrap.appendChild(h("h2", {}, "Pre-Survey"));
-  wrap.appendChild(h("p", { className: "sub", style: { marginBottom: "28px" } }, "20 questions · approximately 8-10 minutes"));
+  wrap.appendChild(h("h2", {}, "前測問卷"));
+  wrap.appendChild(h("p", { className: "sub", style: { marginBottom: "28px" } }, "共 " + PRETEST_QS.length + " 題，約 5 分鐘"));
 
-  const isVisible = q => {
-    if (!q.showIf) return true;
-    if (q.showIf === "P2_has_news") return !!state.answers.P2 && state.answers.P2 !== NO_NEWS;
-    const [key, val] = q.showIf.split("=");
-    return state.answers[key] === val;
-  };
-  const renderPretestSet = questions => questions.forEach(q => {
-    if (!isVisible(q)) return;
+  PRETEST_QS.forEach(q => {
     wrap.appendChild(renderQuestion(q, state.answers[q.id], v => { state.answers[q.id] = v; render(); }));
   });
 
-  wrap.appendChild(h("div", { className: "sec-header" }, "A. Everyday news consumption"));
-  renderPretestSet(PRETEST_HABIT_QS.slice(0, 7));
-  if (state.answers.P2 && state.answers.P2 !== NO_NEWS) {
-    wrap.appendChild(h("div", { className: "notice" }, "For P7-P9, think about the main news channel you selected in P2. This may be an app, website, printed publication, television, radio, or another channel."));
-  }
-  renderPretestSet(PRETEST_HABIT_QS.slice(7));
-
-  wrap.appendChild(h("div", { className: "sec-header" }, "B. News literacy"));
-  wrap.appendChild(h("div", { className: "notice" }, "Each statement may be true or false. Answer based on what you currently know and do not search for the answer. If you are unsure, select ‘Don't know’."));
-  renderPretestSet(NEWS_LITERACY_KNOWLEDGE_QS);
-  wrap.appendChild(h("div", { className: "notice" }, "During the past 30 days, when you encountered news, how often did you do each of the following? Select Not applicable if you did not encounter the situation."));
-  renderPretestSet(NEWS_LITERACY_BEHAVIOUR_QS);
-
-  const visibleQuestions = PRETEST_QS.filter(isVisible);
-  const allDone = visibleQuestions.every(q => {
+  const allDone = PRETEST_QS.every(q => {
     const v = state.answers[q.id];
     if (q.type === "multi") return v && v.length > 0;
     if (q.type === "text") return v && v.trim();
@@ -595,14 +509,13 @@ function renderPretestForm() {
     className: "btn btn-primary", disabled: !allDone ? "disabled" : undefined,
     onClick: async () => {
       if (!allDone) return;
-      const answers = Object.fromEntries(visibleQuestions.map(q => [q.id, state.answers[q.id]]));
-      await submitData({ type: "pretest", pid: state.pid, group: state.group, answers });
+      await submitData({ type: "pretest", pid: state.pid, group: state.group, answers: state.answers });
       setState({ page: "success-pretest" });
     }
-  }, "Submit survey");
+  }, "提交問卷");
   if (!allDone) sub.disabled = true;
   bar.appendChild(sub);
-  if (!allDone) bar.appendChild(h("p", { style: { fontSize: "12px", color: "var(--muted)", marginTop: "8px" } }, "Complete all visible questions before submitting."));
+  if (!allDone) bar.appendChild(h("p", { style: { fontSize: "12px", color: "var(--muted)", marginTop: "8px" } }, "請完成所有題目後提交"));
   wrap.appendChild(bar);
 
   return wrap;
@@ -610,9 +523,9 @@ function renderPretestForm() {
 
 function renderDiaryPick() {
   const wrap = h("div", { className: "wrap" });
-  wrap.appendChild(h("button", { className: "btn-back", onClick: () => setState({ page: "landing" }) }, "← Back"));
-  wrap.appendChild(h("h2", {}, "Evening Diary"));
-  wrap.appendChild(h("p", { className: "sub", style: { marginBottom: "24px" } }, "Select the study day you are completing."));
+  wrap.appendChild(h("button", { className: "btn-back", onClick: () => setState({ page: "landing" }) }, "← 返回"));
+  wrap.appendChild(h("h2", {}, "每日日誌"));
+  wrap.appendChild(h("p", { className: "sub", style: { marginBottom: "24px" } }, "選擇今天是第幾天"));
 
   const done = state.completedDays[state.pid] || [];
   const grid = h("div", { className: "day-grid" });
@@ -622,7 +535,7 @@ function renderDiaryPick() {
       className: "day-btn" + (isDone ? " done" : ""),
       onClick: () => { state.answers = {}; setState({ page: "diary-form", diaryDay: d }); }
     }, "Day " + d);
-    if (isDone) btn.appendChild(h("div", { className: "done-label" }, "Completed"));
+    if (isDone) btn.appendChild(h("div", { className: "done-label" }, "已填"));
     grid.appendChild(btn);
   }
   wrap.appendChild(grid);
@@ -636,27 +549,28 @@ function renderDiaryForm() {
   const isExp = state.group === "experimental";
 
   const topBar = h("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" } },
-    h("button", { className: "btn-back", style: { margin: 0 }, onClick: () => setState({ page: "diary-pick" }) }, "← Select day"),
+    h("button", { className: "btn-back", style: { margin: 0 }, onClick: () => setState({ page: "diary-pick" }) }, "← 選擇日期"),
     h("span", { className: "mono", style: { fontSize: "12px", color: "var(--muted)" } }, state.pid + " · Day " + day)
   );
   wrap.appendChild(topBar);
 
   wrap.appendChild(h("div", { className: "notice" },
-    h("span", { innerHTML: "Please think only about your experience <strong>today</strong>. Complete Section A even if you did not open the assigned app. You do not need to use the app deliberately every day." })
+    h("span", { innerHTML: "請只回想<strong>今天</strong>的使用經驗。即使沒有打開指定 app，也請填第一部分。你可以寫「沒有」，不需要刻意每天使用。" })
   ));
 
   // Section A
-  wrap.appendChild(h("div", { className: "sec-header" }, "A. Basic use"));
+  wrap.appendChild(h("div", { className: "sec-header" }, "A. 基本使用"));
   // D1
   wrap.appendChild(renderQuestion(DIARY_A[0], a.D1, v => { state.answers.D1 = v; render(); }));
-  // D2-D3 are shown on zero-use days.
-  if (a.D1 === "No") {
+  // D2, D3 if D1 = 沒有
+  if (a.D1 === "沒有") {
     wrap.appendChild(renderQuestion(DIARY_A[1], a.D2, v => { state.answers.D2 = v; render(); }));
     wrap.appendChild(renderQuestion(DIARY_A[2], a.D3, v => { state.answers.D3 = v; render(); }));
   }
 
-  if (a.D1 === "Yes") {
-    wrap.appendChild(h("div", { className: "sec-header" }, "B. Today's experience"));
+  // Section B if D1 = 有
+  if (a.D1 === "有") {
+    wrap.appendChild(h("div", { className: "sec-header" }, "B. 使用體驗"));
     DIARY_B.forEach(q => {
       if (q.showIf) {
         const [key, val] = q.showIf.split("=");
@@ -667,13 +581,13 @@ function renderDiaryForm() {
 
     // Section C for experimental
     if (isExp) {
-      wrap.appendChild(h("div", { className: "sec-header" }, "C. New-version features"));
+      wrap.appendChild(h("div", { className: "sec-header" }, "C. 新版功能"));
       DIARY_C.forEach(q => {
         if (q.showIf) {
-          if (q.showIf === "N1_discover" && a.N1 !== "Discover" && a.N1 !== "Both") return;
-          if (q.showIf === "N1_ep" && a.N1 !== "Editors' Pick" && a.N1 !== "Both") return;
-          if (q.showIf === "N2_feedback" && !["Gave explicit feedback", "Refreshed only", "Both"].includes(a.N2)) return;
-          if (q.showIf === "N4_read" && a.N4 !== "Yes") return;
+          if (q.showIf === "N1_discover" && a.N1 !== "Discover" && a.N1 !== "兩者") return;
+          if (q.showIf === "N1_ep" && a.N1 !== "Editors' Pick" && a.N1 !== "兩者") return;
+          if (q.showIf === "N2_feedback" && a.N2 !== "有明確回饋" && a.N2 !== "兩者都有" && a.N2 !== "只有刷新") return;
+          if (q.showIf === "N4_read" && a.N4 !== "有") return;
         }
         wrap.appendChild(renderQuestion(q, a[q.id], v => { state.answers[q.id] = v; render(); }));
       });
@@ -681,38 +595,20 @@ function renderDiaryForm() {
   }
 
   const bar = h("div", { style: { marginTop: "24px", textAlign: "right" } });
-  const visibleDiaryQuestions = a.D1 === "No"
-    ? DIARY_A
-    : a.D1 === "Yes"
-      ? [...DIARY_A.slice(0, 1), ...DIARY_B.filter(q => !q.showIf || a.D11 === "Yes"), ...(isExp ? DIARY_C.filter(q => {
-          if (!q.showIf) return true;
-          if (q.showIf === "N1_discover") return a.N1 === "Discover" || a.N1 === "Both";
-          if (q.showIf === "N1_ep") return a.N1 === "Editors' Pick" || a.N1 === "Both";
-          if (q.showIf === "N2_feedback") return ["Gave explicit feedback", "Refreshed only", "Both"].includes(a.N2);
-          if (q.showIf === "N4_read") return a.N4 === "Yes";
-          return false;
-        }) : [])]
-      : [];
-  const canSubmit = visibleDiaryQuestions.length > 0 && visibleDiaryQuestions.every(q => {
-    if (q.id === "D11_source") return true;
-    const v = a[q.id];
-    return v !== undefined && v !== "";
-  });
+  const canSubmit = a.D1;
   bar.appendChild(h("button", {
     className: "btn btn-primary", disabled: !canSubmit ? "disabled" : undefined,
     onClick: async () => {
       if (!canSubmit) return;
-      const answers = Object.fromEntries(visibleDiaryQuestions.map(q => [q.id, a[q.id]]).filter(([, v]) => v !== undefined && v !== ""));
-      await submitData({ type: "diary", pid: state.pid, group: state.group, day: day, answers });
+      await submitData({ type: "diary", pid: state.pid, group: state.group, day: day, answers: a });
       // Mark day done
       const cd = state.completedDays[state.pid] || [];
       if (!cd.includes(day)) cd.push(day);
       state.completedDays[state.pid] = cd;
-      localStorage.setItem("scmp_days_en_v2", JSON.stringify(state.completedDays));
+      localStorage.setItem("scmp_days", JSON.stringify(state.completedDays));
       setState({ page: "success-diary" });
     }
-  }, "Submit diary"));
-  if (!canSubmit && a.D1) bar.appendChild(h("p", { style: { fontSize: "12px", color: "var(--muted)", marginTop: "8px" } }, "Complete all visible questions before submitting."));
+  }, "提交日誌"));
   wrap.appendChild(bar);
   return wrap;
 }
@@ -721,11 +617,11 @@ function renderSuccess(type) {
   const wrap = h("div", { className: "wrap" });
   const box = h("div", { className: "success" },
     h("div", { className: "icon" }, "✓"),
-    h("h2", {}, type === "pretest" ? "Pre-survey submitted" : "Day " + state.diaryDay + " diary submitted"),
+    h("h2", {}, type === "pretest" ? "前測問卷已提交" : "Day " + state.diaryDay + " 日誌已提交"),
     h("p", { className: "sub", style: { marginTop: "8px" } },
-      type === "pretest" ? "Thank you for completing the pre-survey. Please wait for the researcher's next instructions." : "Thank you for completing today's diary."
+      type === "pretest" ? "感謝你完成前測。請等待研究員的下一步指示。" : "感謝你完成今天的日誌。明天同一時間再見！"
     ),
-    h("button", { className: "btn btn-primary", style: { marginTop: "28px" }, onClick: () => setState({ page: "landing" }) }, "Return to home")
+    h("button", { className: "btn btn-primary", style: { marginTop: "28px" }, onClick: () => setState({ page: "landing" }) }, "返回首頁")
   );
   wrap.appendChild(box);
   return wrap;
@@ -734,18 +630,18 @@ function renderSuccess(type) {
 function renderAdminLogin() {
   const wrap = h("div", { className: "wrap", style: { maxWidth: "360px" } });
   const box = h("div", { style: { textAlign: "center", paddingTop: "40px" } });
-  box.appendChild(h("button", { className: "btn-back", onClick: () => setState({ page: "landing" }) }, "← Back"));
-  box.appendChild(h("h2", { style: { marginTop: "20px" } }, "Researcher Login"));
+  box.appendChild(h("button", { className: "btn-back", onClick: () => setState({ page: "landing" }) }, "← 返回"));
+  box.appendChild(h("h2", { style: { marginTop: "20px" } }, "研究員登入"));
 
-  const pwInput = h("input", { type: "password", placeholder: "Enter PIN", className: "mono", style: { textAlign: "center", letterSpacing: "8px", marginTop: "16px" } });
+  const pwInput = h("input", { type: "password", placeholder: "輸入 PIN", className: "mono", style: { textAlign: "center", letterSpacing: "8px", marginTop: "16px" } });
   pwInput.addEventListener("keydown", e => { if (e.key === "Enter" && pwInput.value === ADMIN_PIN) setState({ page: "dashboard", adminAuthed: true }); });
   box.appendChild(pwInput);
 
   box.appendChild(h("button", {
     className: "btn btn-primary btn-full", style: { marginTop: "12px" },
-    onClick: () => { if (pwInput.value === ADMIN_PIN) setState({ page: "dashboard", adminAuthed: true }); else showToast("Incorrect PIN"); }
-  }, "Log in"));
-  box.appendChild(h("p", { style: { fontSize: "11px", color: "var(--muted)", marginTop: "10px" } }, "Default PIN: " + ADMIN_PIN));
+    onClick: () => { if (pwInput.value === ADMIN_PIN) setState({ page: "dashboard", adminAuthed: true }); else showToast("PIN 錯誤"); }
+  }, "登入"));
+  box.appendChild(h("p", { style: { fontSize: "11px", color: "var(--muted)", marginTop: "10px" } }, "預設 PIN: " + ADMIN_PIN));
 
   wrap.appendChild(box);
   return wrap;
@@ -760,8 +656,8 @@ async function renderDashboard() {
   const wrap = h("div", { className: "wrap-wide" });
 
   const topBar = h("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" } },
-    h("button", { className: "btn-back", style: { margin: 0 }, onClick: () => setState({ page: "landing" }) }, "← Back"),
-    h("button", { className: "btn btn-ghost", onClick: async () => { state.dashData = await fetchDashboard(); render(); } }, "Refresh")
+    h("button", { className: "btn-back", style: { margin: 0 }, onClick: () => setState({ page: "landing" }) }, "← 返回"),
+    h("button", { className: "btn btn-ghost", onClick: async () => { state.dashData = await fetchDashboard(); render(); } }, "重新整理")
   );
   wrap.appendChild(topBar);
 
@@ -776,19 +672,18 @@ async function renderDashboard() {
   const allPids = [...new Set([...pretests.map(p => p.pid), ...diaries.map(p => p.pid)])];
   const ctrlPids = allPids.filter(p => { const e = [...pretests, ...diaries].find(x => x.pid === p); return e && e.group === "control"; });
   const expPids = allPids.filter(p => { const e = [...pretests, ...diaries].find(x => x.pid === p); return e && e.group === "experimental"; });
-  const zeroDays = diaries.filter(dd => (dd.D1 || dd.answers?.D1) === "No").length;
+  const zeroDays = diaries.filter(dd => dd.D1 === "沒有").length;
 
-  wrap.appendChild(h("h2", {}, "Research Dashboard"));
+  wrap.appendChild(h("h2", {}, "研究儀表板"));
   wrap.appendChild(h("p", { className: "sub", style: { marginBottom: "20px" } },
-    allPids.length + " participants · " + pretests.length + " pre-surveys · " + diaries.length + " diaries"
+    allPids.length + " 位參與者 · " + pretests.length + " 份前測 · " + diaries.length + " 份日誌"
   ));
 
   // Tabs
   const tabDefs = [
-    { id: "overview", label: "Overview" }, { id: "completion", label: "Completion" },
-    { id: "likert", label: "Experience trends" }, { id: "tasks", label: "Goal completion" },
-    { id: "opentext", label: "Open responses" }, { id: "references", label: "References" },
-    { id: "export", label: "Export" },
+    { id: "overview", label: "總覽" }, { id: "completion", label: "完成率" },
+    { id: "likert", label: "體驗趨勢" }, { id: "tasks", label: "任務達成" },
+    { id: "opentext", label: "開放題" }, { id: "export", label: "匯出" },
   ];
   const tabBar = h("div", { className: "tabs" });
   tabDefs.forEach(t => {
@@ -805,10 +700,10 @@ async function renderDashboard() {
     // Stats
     const stats = h("div", { className: "stat-grid" });
     [
-      { l: "Participants", v: allPids.length, s: "Control " + ctrlPids.length + " / Experimental " + expPids.length },
-      { l: "Pre-surveys", v: pretests.length, s: allPids.length ? Math.round(pretests.length / allPids.length * 100) + "%" : "—" },
-      { l: "Diaries", v: diaries.length, s: allPids.length ? (diaries.length / (allPids.length * 7) * 100).toFixed(0) + "% complete" : "—" },
-      { l: "Zero-use days", v: zeroDays, s: diaries.length ? (zeroDays / diaries.length * 100).toFixed(0) + "%" : "—" },
+      { l: "參與者", v: allPids.length, s: "對照 " + ctrlPids.length + " / 實驗 " + expPids.length },
+      { l: "前測完成", v: pretests.length, s: allPids.length ? Math.round(pretests.length / allPids.length * 100) + "%" : "—" },
+      { l: "日誌提交", v: diaries.length, s: allPids.length ? (diaries.length / (allPids.length * 7) * 100).toFixed(0) + "% 完成率" : "—" },
+      { l: "零使用日", v: zeroDays, s: diaries.length ? (zeroDays / diaries.length * 100).toFixed(0) + "%" : "—" },
     ].forEach(c => {
       stats.appendChild(h("div", { className: "stat-card" },
         h("div", { className: "stat-label" }, c.l),
@@ -820,13 +715,13 @@ async function renderDashboard() {
 
     if (pretests.length > 0) {
       const sumCard = h("div", { className: "card" });
-      sumCard.appendChild(h("h3", { style: { marginBottom: "14px" } }, "Pre-survey baseline summary"));
+      sumCard.appendChild(h("h3", { style: { marginBottom: "14px" } }, "前測基線摘要"));
       const grid = h("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", fontSize: "13px", color: "var(--muted)" } });
       [
-        { label: "P1 Smartphone news days", key: "P1" },
-        { label: "P3 SCMP use frequency", key: "P3" },
-        { label: "P4 SCMP status", key: "P4" },
-        { label: "P10 AI familiarity", key: "P10" },
+        { label: "P1 看新聞天數", key: "P1" },
+        { label: "P3 SCMP 使用頻率", key: "P3" },
+        { label: "P4 SCMP 身分", key: "P4" },
+        { label: "P10 AI 熟悉度", key: "P10" },
       ].forEach(item => {
         const sec = h("div", {},
           h("strong", { style: { color: "var(--text)" } }, item.label),
@@ -835,33 +730,25 @@ async function renderDashboard() {
         grid.appendChild(sec);
       });
       sumCard.appendChild(grid);
-      const literacyRows = pretests.map(p => {
-        const score = Object.entries(NEWS_LITERACY_KEY).reduce((sum, [key, correct]) => sum + ((p[key] || p.answers?.[key]) === correct ? 1 : 0), 0);
-        return p.pid + ": " + score + "/5";
-      });
-      sumCard.appendChild(h("div", { style: { marginTop: "18px", fontSize: "13px", color: "var(--muted)" } },
-        h("strong", { style: { color: "var(--text)" } }, "Exploratory news-literacy knowledge score (researcher only)"),
-        h("div", {}, literacyRows.join(" · "))
-      ));
       content.appendChild(sumCard);
     }
   }
 
   if (state.dashTab === "completion") {
     const card = h("div", { className: "card", style: { overflowX: "auto" } });
-    card.appendChild(h("h3", { style: { marginBottom: "16px" } }, "Seven-day diary completion matrix"));
+    card.appendChild(h("h3", { style: { marginBottom: "16px" } }, "七天日誌完成矩陣"));
     const table = h("table", { className: "matrix" });
     const thead = h("thead");
     const hr = h("tr");
     hr.appendChild(h("th", {}, "ID"));
-    hr.appendChild(h("th", {}, "Group"));
+    hr.appendChild(h("th", {}, "組別"));
     for (let d = 1; d <= 7; d++) hr.appendChild(h("th", { className: "center" }, "D" + d));
     thead.appendChild(hr);
     table.appendChild(thead);
 
     const tbody = h("tbody");
     if (allPids.length === 0) {
-      const emptyRow = h("tr"); emptyRow.appendChild(h("td", { colSpan: "9", style: { padding: "20px", textAlign: "center", color: "var(--muted)" } }, "No data yet"));
+      const emptyRow = h("tr"); emptyRow.appendChild(h("td", { colSpan: "9", style: { padding: "20px", textAlign: "center", color: "var(--muted)" } }, "尚無數據"));
       tbody.appendChild(emptyRow);
     } else {
       allPids.forEach(pid => {
@@ -869,12 +756,12 @@ async function renderDashboard() {
         const grp = [...pretests, ...diaries].find(x => x.pid === pid);
         const g = grp ? grp.group : "?";
         row.appendChild(h("td", { className: "mono", style: { fontWeight: "600" } }, pid));
-        row.appendChild(h("td", { style: { color: "var(--muted)" } }, g === "control" ? "Control" : "Experimental"));
+        row.appendChild(h("td", { style: { color: "var(--muted)" } }, g === "control" ? "對照" : "實驗"));
         for (let d = 1; d <= 7; d++) {
           const entry = diaries.find(dd => dd.pid === pid && (dd.day == d || dd.day === "Day " + d));
           let cls, label;
           if (!entry) { cls = "dot-missing"; label = "—"; }
-          else if ((entry.D1 || entry.answers?.D1) === "Yes") { cls = "dot-used"; label = "✓"; }
+          else if ((entry.D1 || entry.answers?.D1) === "有") { cls = "dot-used"; label = "✓"; }
           else { cls = "dot-notused"; label = "○"; }
           row.appendChild(h("td", { className: "center" }, h("span", { className: "dot " + cls }, label)));
         }
@@ -884,21 +771,21 @@ async function renderDashboard() {
     table.appendChild(tbody);
     card.appendChild(table);
     card.appendChild(h("div", { style: { display: "flex", gap: "16px", marginTop: "14px", fontSize: "12px", color: "var(--muted)" } },
-      h("span", {}, "✓ Used app"), h("span", {}, "○ Did not use, diary completed"), h("span", {}, "— Missing")
+      h("span", {}, "✓ 有使用"), h("span", {}, "○ 未使用（已填）"), h("span", {}, "— 未填寫")
     ));
     content.appendChild(card);
   }
 
   if (state.dashTab === "likert") {
     const metrics = [
-      { key: "D8a", label: "D8a News matched immediate need" },
-      { key: "D8b", label: "D8b Ease of finding news" },
-      { key: "D8d", label: "D8d Worth the time and effort" },
+      { key: "D8a", label: "D8a 找到符合需要的新聞" },
+      { key: "D8b", label: "D8b 找新聞的容易度" },
+      { key: "D8d", label: "D8d 值得花的時間與心力" },
     ];
     metrics.forEach(m => {
       const card = h("div", { className: "card" });
-      card.appendChild(h("h3", {}, m.label + " (daily trend)"));
-      card.appendChild(h("p", { className: "sub", style: { marginBottom: "12px" } }, "1-7 scale; includes app-use days only"));
+      card.appendChild(h("h3", {}, m.label + "（每日趨勢）"));
+      card.appendChild(h("p", { className: "sub", style: { marginBottom: "12px" } }, "1-7 分，僅含有使用 app 之日"));
       const canvasWrap = h("div", { className: "chart-container" });
       const canvas = h("canvas");
       canvasWrap.appendChild(canvas);
@@ -908,7 +795,7 @@ async function renderDashboard() {
       // Prepare data
       const ctrlData = [], expData = [];
       for (let d = 1; d <= 7; d++) {
-        const dayEntries = diaries.filter(dd => (dd.day == d) && ((dd.D1 || dd.answers?.D1) === "Yes"));
+        const dayEntries = diaries.filter(dd => (dd.day == d) && ((dd.D1 || dd.answers?.D1) === "有"));
         const ctrlE = dayEntries.filter(dd => dd.group === "control");
         const expE = dayEntries.filter(dd => dd.group === "experimental");
         const avg = (entries) => {
@@ -925,8 +812,8 @@ async function renderDashboard() {
           data: {
             labels: ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"],
             datasets: [
-              { label: "Control", data: ctrlData, borderColor: "#2563eb", backgroundColor: "#2563eb22", tension: .3, spanGaps: true },
-              { label: "Experimental", data: expData, borderColor: "#db2777", backgroundColor: "#db277722", tension: .3, spanGaps: true },
+              { label: "對照組", data: ctrlData, borderColor: "#2563eb", backgroundColor: "#2563eb22", tension: .3, spanGaps: true },
+              { label: "實驗組", data: expData, borderColor: "#db2777", backgroundColor: "#db277722", tension: .3, spanGaps: true },
             ]
           },
           options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 1, max: 7 } }, plugins: { legend: { position: "bottom" } } }
@@ -938,21 +825,21 @@ async function renderDashboard() {
   if (state.dashTab === "tasks") {
     // D7
     const card1 = h("div", { className: "card" });
-    card1.appendChild(h("h3", {}, "D7 Goal completion distribution"));
-    card1.appendChild(h("p", { className: "sub", style: { marginBottom: "12px" } }, "All diary entries by group"));
+    card1.appendChild(h("h3", {}, "D7 任務達成分佈"));
+    card1.appendChild(h("p", { className: "sub", style: { marginBottom: "12px" } }, "按組別統計所有日誌"));
     const c1wrap = h("div", { className: "chart-container" });
     const c1 = h("canvas"); c1wrap.appendChild(c1); card1.appendChild(c1wrap);
     content.appendChild(card1);
 
-    const d7opts = ["Completely", "Partly", "Not at all", "I did not have a specific goal"];
+    const d7opts = ["完全完成", "部分完成", "沒有完成", "沒有特定目的"];
     const d7ctrl = d7opts.map(o => diaries.filter(d => d.group === "control" && (d.D7 || d.answers?.D7) === o).length);
     const d7exp = d7opts.map(o => diaries.filter(d => d.group === "experimental" && (d.D7 || d.answers?.D7) === o).length);
     setTimeout(() => {
       chartInstances.d7 = new Chart(c1, {
         type: "bar",
         data: { labels: d7opts, datasets: [
-          { label: "Control", data: d7ctrl, backgroundColor: "#2563eb" },
-          { label: "Experimental", data: d7exp, backgroundColor: "#db2777" },
+          { label: "對照組", data: d7ctrl, backgroundColor: "#2563eb" },
+          { label: "實驗組", data: d7exp, backgroundColor: "#db2777" },
         ]},
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom" } } }
       });
@@ -960,20 +847,20 @@ async function renderDashboard() {
 
     // D6
     const card2 = h("div", { className: "card" });
-    card2.appendChild(h("h3", {}, "D6 Time to first useful story"));
+    card2.appendChild(h("h3", {}, "D6 找到第一篇有用文章的時間"));
     const c2wrap = h("div", { className: "chart-container" });
     const c2 = h("canvas"); c2wrap.appendChild(c2); card2.appendChild(c2wrap);
     content.appendChild(card2);
 
-    const d6opts = ["Less than 1 minute", "1-3 minutes", "More than 3 minutes", "I left without finding one"];
+    const d6opts = ["少於 1 分鐘", "1-3 分鐘", "超過 3 分鐘", "直到離開都沒有"];
     const d6ctrl = d6opts.map(o => diaries.filter(d => d.group === "control" && (d.D6 || d.answers?.D6) === o).length);
     const d6exp = d6opts.map(o => diaries.filter(d => d.group === "experimental" && (d.D6 || d.answers?.D6) === o).length);
     setTimeout(() => {
       chartInstances.d6 = new Chart(c2, {
         type: "bar",
         data: { labels: d6opts, datasets: [
-          { label: "Control", data: d6ctrl, backgroundColor: "#2563eb" },
-          { label: "Experimental", data: d6exp, backgroundColor: "#db2777" },
+          { label: "對照組", data: d6ctrl, backgroundColor: "#2563eb" },
+          { label: "實驗組", data: d6exp, backgroundColor: "#db2777" },
         ]},
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom" } } }
       });
@@ -982,33 +869,33 @@ async function renderDashboard() {
 
   if (state.dashTab === "opentext") {
     const card = h("div", { className: "card" });
-    card.appendChild(h("h3", { style: { marginBottom: "16px" } }, "Open-ended responses"));
+    card.appendChild(h("h3", { style: { marginBottom: "16px" } }, "開放題回應"));
 
     const d9entries = diaries.filter(d => {
       const v = d.D9 || d.answers?.D9;
-      return v && v.toLowerCase() !== "none" && v.trim();
+      return v && v !== "沒有" && v.trim();
     });
     const d10entries = diaries.filter(d => {
       const v = d.D10 || d.answers?.D10;
-      return v && v.toLowerCase() !== "none" && v.trim();
+      return v && v !== "沒有" && v.trim();
     });
 
-    card.appendChild(h("h4", { style: { fontSize: "13px", fontWeight: "700", color: "var(--accent)", marginBottom: "10px" } }, "D9 Most useful story today"));
-    if (d9entries.length === 0) card.appendChild(h("p", { style: { fontSize: "13px", color: "var(--muted)" } }, "No responses yet"));
+    card.appendChild(h("h4", { style: { fontSize: "13px", fontWeight: "700", color: "var(--accent)", marginBottom: "10px" } }, "D9 今天最有用的一篇新聞"));
+    if (d9entries.length === 0) card.appendChild(h("p", { style: { fontSize: "13px", color: "var(--muted)" } }, "尚無回應"));
     d9entries.forEach(d => {
       card.appendChild(h("div", { className: "ot-entry" },
         h("span", { className: "ot-tag" }, d.pid + " D" + d.day),
-        h("span", { className: "ot-group" }, "(" + (d.group === "control" ? "Control" : "Experimental") + ")"),
+        h("span", { className: "ot-group" }, "(" + (d.group === "control" ? "對照" : "實驗") + ")"),
         (d.D9 || d.answers?.D9)
       ));
     });
 
-    card.appendChild(h("h4", { style: { fontSize: "13px", fontWeight: "700", color: "var(--accent)", marginTop: "24px", marginBottom: "10px" } }, "D10 Confusing, repetitive, or untrustworthy experiences"));
-    if (d10entries.length === 0) card.appendChild(h("p", { style: { fontSize: "13px", color: "var(--muted)" } }, "No responses yet"));
+    card.appendChild(h("h4", { style: { fontSize: "13px", fontWeight: "700", color: "var(--accent)", marginTop: "24px", marginBottom: "10px" } }, "D10 困惑、重複或不信任"));
+    if (d10entries.length === 0) card.appendChild(h("p", { style: { fontSize: "13px", color: "var(--muted)" } }, "尚無回應"));
     d10entries.forEach(d => {
       card.appendChild(h("div", { className: "ot-entry" },
         h("span", { className: "ot-tag" }, d.pid + " D" + d.day),
-        h("span", { className: "ot-group" }, "(" + (d.group === "control" ? "Control" : "Experimental") + ")"),
+        h("span", { className: "ot-group" }, "(" + (d.group === "control" ? "對照" : "實驗") + ")"),
         (d.D10 || d.answers?.D10)
       ));
     });
@@ -1016,44 +903,21 @@ async function renderDashboard() {
     content.appendChild(card);
   }
 
-  if (state.dashTab === "references") {
-    const card = h("div", { className: "card", style: { overflowX: "auto" } });
-    card.appendChild(h("h3", { style: { marginBottom: "8px" } }, "Question references"));
-    card.appendChild(h("p", { className: "sub", style: { marginBottom: "16px" } }, "References are researcher-facing and are not displayed to participants."));
-    const table = h("table", { className: "matrix" });
-    const thead = h("thead", {}, h("tr", {}, h("th", {}, "Item"), h("th", {}, "Question"), h("th", {}, "Reference")));
-    table.appendChild(thead);
-    const tbody = h("tbody");
-    PRETEST_QS.concat(DIARY_A, DIARY_B, DIARY_C).forEach(q => {
-      tbody.appendChild(h("tr", {},
-        h("td", { className: "mono", style: { fontWeight: "600" } }, q.id),
-        h("td", {}, q.text),
-        h("td", { style: { color: "var(--muted)" } }, QUESTION_REFERENCES[q.id] || "Pilot-added item")
-      ));
-    });
-    table.appendChild(tbody);
-    card.appendChild(table);
-    card.appendChild(h("p", { style: { fontSize: "12px", color: "var(--muted)", marginTop: "18px", lineHeight: "1.6" } },
-      "[R1] SCMP New Client: Two-Study Validation Program (7 September 2026). [TTF] Task-Technology Fit. [VSD] Value-Sensitive Design. [VAM] Value-based Adoption Model. [NL5C] Tully et al. (2022). [NLK15] Maksl et al. (2024). [NLB] Vraga et al. (2021). [COR] online corroboration/source-evaluation concept."
-    ));
-    content.appendChild(card);
-  }
-
   if (state.dashTab === "export") {
     const card = h("div", { className: "card" });
-    card.appendChild(h("h3", { style: { marginBottom: "16px" } }, "Data Export"));
+    card.appendChild(h("h3", { style: { marginBottom: "16px" } }, "資料匯出"));
     card.appendChild(h("p", { style: { fontSize: "13px", color: "var(--muted)", marginBottom: "20px", lineHeight: "1.6" } },
-      "Export CSV files for analysis in Excel, R, or Python. Files use UTF-8 with BOM encoding."
+      "匯出 CSV 檔案，可用 Excel 或 R/Python 開啟分析。UTF-8 with BOM 編碼。"
     ));
 
     const btnRow = h("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap" } });
-    btnRow.appendChild(h("button", { className: "btn btn-primary", onClick: () => exportCSV("pretest", pretests) }, "Export pre-surveys (" + pretests.length + ")"));
-    btnRow.appendChild(h("button", { className: "btn btn-secondary", onClick: () => exportCSV("diary", diaries) }, "Export diaries (" + diaries.length + ")"));
+    btnRow.appendChild(h("button", { className: "btn btn-primary", onClick: () => exportCSV("pretest", pretests) }, "匯出前測（" + pretests.length + " 筆）"));
+    btnRow.appendChild(h("button", { className: "btn btn-secondary", onClick: () => exportCSV("diary", diaries) }, "匯出日誌（" + diaries.length + " 筆）"));
     btnRow.appendChild(h("button", { className: "btn btn-secondary", onClick: () => {
       const blob = new Blob([JSON.stringify(state.localLog, null, 2)], { type: "application/json" });
       const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
       a.download = "scmp_local_backup.json"; a.click();
-    } }, "Export local backup (JSON)"));
+    } }, "匯出本地備份 (JSON)"));
     card.appendChild(btnRow);
 
     content.appendChild(card);
@@ -1066,7 +930,7 @@ async function renderDashboard() {
 function exportCSV(type, data) {
   let csv = "\uFEFF"; // BOM
   if (type === "pretest") {
-    const headers = ["timestamp", "pid", "group", "P1", "P2", "P2_other", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11", "NLK1", "NLK2", "NLK3", "NLK4", "NLK5", "NLB1", "NLB2", "NLB3", "NLB4"];
+    const headers = ["timestamp", "pid", "group", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11"];
     csv += headers.join(",") + "\n";
     data.forEach(r => {
       const row = headers.map(h => {
@@ -1110,7 +974,7 @@ function render() {
     case "admin-login": page = renderAdminLogin(); break;
     case "dashboard":
       renderDashboard().then(p => { app.innerHTML = ""; app.appendChild(p); });
-      app.appendChild(h("div", { style: { textAlign: "center", padding: "60px", color: "var(--muted)" } }, "Loading..."));
+      app.appendChild(h("div", { style: { textAlign: "center", padding: "60px", color: "var(--muted)" } }, "載入中…"));
       return;
     default: page = renderLanding();
   }

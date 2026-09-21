@@ -234,7 +234,7 @@ textarea {
 
 <script>
 // Google Apps Script Web App endpoint
-const API_URL = "https://script.google.com/macros/s/AKfycbw3Y7Td-9sl6OsiPDNkRz8i4ADrX8C2N01QvbICjCR0KCJTZsZQNd3vAY_ViF0qFyXv/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzhUG_d6_DQae6rtEKfpOENPLSuffHMdC5c0hK1dPQu3PeeTXeYvWXkBwrXwCktNoc/exec";
 const ADMIN_PIN = "2026";
 
 const AGE_OPTS = ["Under 18","18–24","25–34","35–44","45–54","55–64","65 or older","Prefer not to answer"];
@@ -427,6 +427,11 @@ function setState(patch) {
 }
 
 async function submitData(payload, options = {}) {
+  // Backward compatibility with the previous single-/two-group backend.
+  // Participants no longer choose a group in the UI, but all current
+  // participants belong to the experimental/new-version condition.
+  payload = { ...payload, group: "experimental", schemaVersion: "2026-09-21" };
+
   const localPayload = JSON.parse(JSON.stringify(payload));
   if (localPayload.attachment && localPayload.attachment.data) {
     localPayload.attachment.data = "[not stored in localStorage]";
