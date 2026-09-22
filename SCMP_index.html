@@ -357,6 +357,12 @@ const DAILY_BASIC_QS = [
   ], otherTrigger:"Other", otherId:"D3a_other", otherPlaceholder:"Please specify the alternative source" }
 ];
 
+const DAILY_FINDABILITY_QS = [
+  { id:"DF1", text:"During your first use today, did you find any articles that were useful for what you wanted to do?", type:"single", opts:["Yes, I found 1 useful article","Yes, I found 2–3 useful articles","Yes, I found 4 or more useful articles","No, I did not find any useful articles"] },
+  { id:"DF2", text:"How long did it take you to find the first useful article after opening the app?", type:"single", opts:["Less than 1 minute","1–3 minutes","More than 3 minutes","I left without finding a useful article"] },
+  { id:"DF3", text:"Which mode did you mainly use today: Discover or Editors' Pick?", type:"single", opts:["Discover","Editors' Pick","I used both about equally"] }
+];
+
 const DAILY_PRODUCT_QS = [
   { id:"DU1", text:"Today, the new SCMP app helped me find the news I wanted to read.", type:"likert7" },
   { id:"DU2", text:"Today, the new SCMP app made it easier for me to find news that was useful for what I wanted to know.", type:"likert7" },
@@ -795,7 +801,7 @@ function diaryVisibleQuestions() {
   if (a.D1 === "No") qs.push(DAILY_BASIC_QS[1]);
   qs.push(DAILY_BASIC_QS[2]);
   if (a.D3 === "Yes") qs.push(DAILY_BASIC_QS[3]);
-  if (a.D1 === "Yes") qs.push(...DAILY_PRODUCT_QS, ...DAILY_REFLECTION_QS);
+  if (a.D1 === "Yes") qs.push(...DAILY_FINDABILITY_QS, ...DAILY_PRODUCT_QS, ...DAILY_REFLECTION_QS);
   if (state.diaryDay === 7) qs.push(...POSTTEST_QS);
   return qs;
 }
@@ -826,22 +832,25 @@ function renderDiaryForm() {
   }
 
   if (a.D1 === "Yes") {
-    wrap.appendChild(h("div", { className:"sec-header" }, "B. SCMP product experience"));
+    wrap.appendChild(h("div", { className:"sec-header" }, "B. Finding news today"));
+    DAILY_FINDABILITY_QS.forEach(q => wrap.appendChild(renderQuestion(q, a[q.id], v => { state.answers[q.id] = v; render(); })));
+
+    wrap.appendChild(h("div", { className:"sec-header" }, "C. SCMP product experience"));
     wrap.appendChild(h("div", { className:"notice" }, "For the following items, use a 7-point scale from 1 = Strongly disagree to 7 = Strongly agree."));
     DAILY_PRODUCT_QS.slice(0,3).forEach(q => wrap.appendChild(renderQuestion(q, a[q.id], v => { state.answers[q.id] = v; render(); })));
 
-    wrap.appendChild(h("div", { className:"sec-header", style:{ marginTop:"20px" } }, "C. Recommendation relevance"));
+    wrap.appendChild(h("div", { className:"sec-header", style:{ marginTop:"20px" } }, "D. Recommendation relevance"));
     DAILY_PRODUCT_QS.slice(3,6).forEach(q => wrap.appendChild(renderQuestion(q, a[q.id], v => { state.answers[q.id] = v; render(); })));
 
-    wrap.appendChild(h("div", { className:"sec-header", style:{ marginTop:"20px" } }, "D. Ease of use"));
+    wrap.appendChild(h("div", { className:"sec-header", style:{ marginTop:"20px" } }, "E. Ease of use"));
     DAILY_PRODUCT_QS.slice(6).forEach(q => wrap.appendChild(renderQuestion(q, a[q.id], v => { state.answers[q.id] = v; render(); })));
 
-    wrap.appendChild(h("div", { className:"sec-header" }, "E. Short reflection"));
+    wrap.appendChild(h("div", { className:"sec-header" }, "F. Short reflection"));
     DAILY_REFLECTION_QS.forEach(q => wrap.appendChild(renderQuestion(q, a[q.id], v => { state.answers[q.id] = v; render(); })));
   }
 
   if (day === 7) {
-    wrap.appendChild(h("div", { className:"sec-header" }, "F. Day-7 post-survey"));
+    wrap.appendChild(h("div", { className:"sec-header" }, "G. Day-7 post-survey"));
     wrap.appendChild(h("div", { className:"notice" }, "This post-survey appears only on Day 7. Please answer based on your experience after the seven-day study."));
     wrap.appendChild(h("h3", { style:{ margin:"18px 0 10px" } }, "Reasons for consuming news"));
     POST_MOTIVATION_QS.forEach(q => wrap.appendChild(renderQuestion(q, a[q.id], v => { state.answers[q.id] = v; render(); })));
